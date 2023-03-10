@@ -107,7 +107,8 @@ class DQFitter:
         # Select the fit method
         if fitMethod == "likelyhood":
             print("########### Perform likelyhood fit ###########")
-            rooFitRes = ROOT.RooFitResult(pdf.fitTo(rooDs, ROOT.RooFit.Extended(ROOT.kTRUE), ROOT.RooFit.Save()))
+            #rooFitRes = ROOT.RooFitResult(pdf.fitTo(rooDs, ROOT.RooFit.Extended(ROOT.kTRUE), ROOT.RooFit.Save()))
+            rooFitRes = ROOT.RooFitResult(pdf.fitTo(rooDs, ROOT.RooFit.Range(2, 5), ROOT.RooFit.Extended(ROOT.kTRUE), ROOT.RooFit.SumW2Error(ROOT.kTRUE), ROOT.RooFit.Save(ROOT.kTRUE)))
         if fitMethod == "chi2":
             print("########### Perform X2 fit ###########")
             rooFitRes = ROOT.RooFitResult(pdf.chi2FitTo(rooDs, ROOT.RooFit.Save()))
@@ -157,6 +158,11 @@ class DQFitter:
         paveText.AddText("#bf{#chi^{2}/dof = %3.2f}" % (fRooPlot.chiSquare(nPars)))
         fRooPlot.addObject(paveText)
         extraText.append("#chi^{2}/dof = %3.2f" % (fRooPlot.chiSquare(nPars)))
+        #extraText.append("#chi^{2}/dof = %3.2f" % (fRooPlot.chiSquare() * self.fRooMass.getBins()))
+        
+
+        #chi2_var = ROOT.RooChi2Var("chi2", "chi2", rooDs, pdf)
+        #extraText.append("#chi^{2}/dof NEW = %3.2f" % (pdf.createChi2(rooDs).getVal()))
 
         # Fit plot
         canvasFit = TCanvas("fit_plot_{}".format(trialName), "fit_plot_{}".format(trialName), 800, 600)
