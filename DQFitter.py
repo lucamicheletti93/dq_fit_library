@@ -87,6 +87,8 @@ class DQFitter:
                 nameFunc += "Pdf::{}Pdf(m[{},{}]".format(self.fPdfDict["pdfName"][i], self.fMinDatasetRange, self.fMaxDatasetRange)
                 pdfList.append(self.fPdfDict["pdfName"][i])
                 for j in range(0, len(parVal)):
+                    #if "frac" in parName[j]:
+                        #continue
                     nameFunc += ",{}".format(parName[j])
                 nameFunc += ")"
                 self.fRooWorkspace.factory(nameFunc)
@@ -94,11 +96,22 @@ class DQFitter:
                 nameFunc = self.fPdfDict["pdf"][i]
                 nameFunc += "::sum("
                 for j in range(0, len(pdfList)):
+                    #if ("prod" in parName[j]):
+                        #self.fRooWorkspace.factory("{}".format(parName[j]))
+                        # Replace the exression of the parameter with the name of the parameter
+                        #r1 = parName[j].find("::") + 2
+                        #r2 = parName[j].find("(", r1)
+                        #parName[j] = parName[j][r1:r2]
+                        #print("par name -> ", parName[j])
+                        #nameFunc += "{}[{},{},{}]*{}Pdf".format(parName[j], parVal[j], parLimMin[j], parLimMax[j], pdfList[j])
+                        #self.fParNames.append(parName[j])
+                    #else:
                     nameFunc += "{}[{},{},{}]*{}Pdf".format(parName[j], parVal[j], parLimMin[j], parLimMax[j], pdfList[j])
                     self.fParNames.append(parName[j])
                     if not j == len(pdfList) - 1:
                         nameFunc += ","
                 nameFunc += ")"
+                #print(nameFunc)
                 self.fRooWorkspace.factory(nameFunc)
 
     def CheckSignalTails(self, fitRangeMin, fitRangeMax):
@@ -131,7 +144,7 @@ class DQFitter:
         # Select the fit method
         if fitMethod == "likelyhood":
             print("########### Perform likelyhood fit ###########")
-            rooFitRes = ROOT.RooFitResult(pdf.fitTo(rooDs, ROOT.RooFit.Range(fitRangeMin,fitRangeMax),ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.Save()))
+            rooFitRes = ROOT.RooFitResult(pdf.fitTo(rooDs, ROOT.RooFit.Range(fitRangeMin,fitRangeMax), ROOT.RooFit.Save()))
         #if fitMethod == "chi2":
             #print("########### Perform X2 fit ###########")
             #rooFitRes = ROOT.RooFitResult(pdf.chi2FitTo(rooDs, ROOT.RooFit.Range(fitRangeMin,fitRangeMax),ROOT.RooFit.PrintLevel(-1), ROOT.RooFit.Save()))
