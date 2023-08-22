@@ -1,0 +1,364 @@
+import yaml
+import json
+import sys
+import argparse
+from array import array
+import os
+import math 
+from os import path
+import numpy as np
+import pandas as pd
+import uncertainties
+from uncertainties import ufloat, unumpy
+import ROOT
+from ROOT import TCanvas, TH1F, TH2F, TGraphErrors, TLegend
+sys.path.append('../../utils')
+from utils_library import LoadStyle, PropagateErrorsOnRatio, ToCArray
+from plot_library import LoadStyle, SetGraStat, SetGraSyst, SetLegend
+
+
+
+def main():
+    LoadStyle()
+    ROOT.gStyle.SetOptStat(0)
+    ROOT.gStyle.SetHatchesSpacing(0.3)
+    #gStyle.SetHatchesLineWidth(2)
+
+    letexTitle = ROOT.TLatex()
+    letexTitle.SetTextSize(0.05)
+    letexTitle.SetNDC()
+    letexTitle.SetTextFont(42)
+
+
+    inputDir  = "systematics_full_stat_matchedMchMid"
+
+    brJpsiToMuMu = 0.05961
+    brPsi2sToMuMu = 0.008
+    
+    # Global systematics
+    # TO BE COMPLETED
+
+    # pt-dependence
+    dfYieldJpsiPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/{}/sig_Jpsi_vs_pt.txt'.format(inputDir), sep=' ')
+    ptMin = dfYieldJpsiPt["x_min"].to_numpy()
+    ptMax = dfYieldJpsiPt["x_max"].to_numpy()
+    ptCentr = (ptMin + ptMax) / 2.
+    ptWidth = (ptMax - ptMin) / 2.
+    ptArr = np.append(ptMin, ptMax[len(ptMin)-1],)
+    yieldJpsiPt = dfYieldJpsiPt["val"].to_numpy()
+    statYieldJpsiPt = dfYieldJpsiPt["stat"].to_numpy()
+    systYieldJpsiPt = dfYieldJpsiPt["syst"].to_numpy()
+    print("Sum J/psi vs pT: ", sum(yieldJpsiPt))
+
+    dfYieldPsi2sPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/{}/sig_Psi2s_vs_pt.txt'.format(inputDir), sep=' ')
+    yieldPsi2sPt = dfYieldPsi2sPt["val"].to_numpy()
+    statYieldPsi2sPt = dfYieldPsi2sPt["stat"].to_numpy()
+    systYieldPsi2sPt = dfYieldPsi2sPt["syst"].to_numpy()
+    print("Sum J/psi vs pT: ", sum(yieldPsi2sPt))
+
+    dfRatioPsi2sOverJpsiPt = pd.read_csv('/Users/lucamicheletti/cernbox/run3_Psi2s_over_Jpsi/final_results_LHC22all_periods/Comparison_methods/RatioValuesCorentin.txt', sep=' ')
+    ratioPsi2sOverJpsiPt = dfRatioPsi2sOverJpsiPt["val"].to_numpy()
+    statRatioPsi2sOverJpsiPt = dfRatioPsi2sOverJpsiPt["stat"].to_numpy()
+    systRatioPsi2sOverJpsiPt = dfRatioPsi2sOverJpsiPt["syst"].to_numpy()
+
+    dfAxeJpsiPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/axe_ideal_Jpsi_vs_pt.txt', sep=' ')
+    axeJpsiPt = dfAxeJpsiPt["val"].to_numpy()
+    statAxeJpsiPt = dfAxeJpsiPt["stat"].to_numpy()
+    systAxeJpsiPt = dfAxeJpsiPt["syst"].to_numpy()
+
+    dfAxePsi2sPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/axe_ideal_Psi2s_vs_pt.txt', sep=' ')
+    axePsi2sPt = dfAxePsi2sPt["val"].to_numpy()
+    statAxePsi2sPt = dfAxePsi2sPt["stat"].to_numpy()
+    systAxePsi2sPt = dfAxePsi2sPt["syst"].to_numpy()
+
+    dfAxeRatioPsi2sOverJpsiPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/axe_ideal_Psi2s_over_Jpsi_vs_pt.txt', sep=' ')
+    axeRatioPsi2sOverJpsiPt = dfAxeRatioPsi2sOverJpsiPt["val"].to_numpy()
+    statAxeRatioPsi2sOverJpsiPt = dfAxeRatioPsi2sOverJpsiPt["stat"].to_numpy()
+    systAxeRatioPsi2sOverJpsiPt = dfAxeRatioPsi2sOverJpsiPt["syst"].to_numpy()
+
+
+    dfCsPsi2sOverJpsiTheorCsNloPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/theory_predictions/cs_nlo_pt.txt', sep=' ')
+    ptMinTheor = dfCsPsi2sOverJpsiTheorCsNloPt["x_min"].to_numpy()
+    ptMaxTheor = dfCsPsi2sOverJpsiTheorCsNloPt["x_max"].to_numpy()
+    ptCentrTheor = (ptMinTheor + ptMaxTheor) / 2.
+    ptWidthTheor = (ptMaxTheor - ptMinTheor) / 2.
+    csPsi2sOverJpsiTheorCsNloPt = dfCsPsi2sOverJpsiTheorCsNloPt["val"].to_numpy()
+    minCsPsi2sOverJpsiTheorCsNloPt = dfCsPsi2sOverJpsiTheorCsNloPt["val_min"].to_numpy()
+    maxCsPsi2sOverJpsiTheorCsNloPt = dfCsPsi2sOverJpsiTheorCsNloPt["val_max"].to_numpy()
+
+    dfCsPsi2sOverJpsiTheorCsCoNloPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/theory_predictions/cs_co_nlo_pt.txt', sep=' ')
+    csPsi2sOverJpsiTheorCsCoNloPt = dfCsPsi2sOverJpsiTheorCsCoNloPt["val"].to_numpy()
+    minCsPsi2sOverJpsiTheorCsCoNloPt = dfCsPsi2sOverJpsiTheorCsCoNloPt["val_min"].to_numpy()
+    maxCsPsi2sOverJpsiTheorCsCoNloPt = dfCsPsi2sOverJpsiTheorCsCoNloPt["val_max"].to_numpy()
+
+    corrYieldJpsiPt, statCorrYieldJpsiPt = PropagateErrorsOnRatio(axeJpsiPt, statAxeJpsiPt, yieldJpsiPt, statYieldJpsiPt)
+    corrYieldJpsiPt, systCorrYieldJpsiPt = PropagateErrorsOnRatio(axeJpsiPt, systAxeJpsiPt, yieldJpsiPt, systYieldJpsiPt)
+    corrYieldJpsiPt = corrYieldJpsiPt / brJpsiToMuMu
+    statCorrYieldJpsiPt = statCorrYieldJpsiPt / brJpsiToMuMu
+    systCorrYieldJpsiPt = systCorrYieldJpsiPt / brJpsiToMuMu
+
+    corrYieldPsi2sPt, statCorrYieldPsi2sPt = PropagateErrorsOnRatio(axePsi2sPt, statAxePsi2sPt, yieldPsi2sPt, statYieldPsi2sPt)
+    corrYieldPsi2sPt, systCorrYieldPsi2sPt = PropagateErrorsOnRatio(axePsi2sPt, systAxePsi2sPt, yieldPsi2sPt, systYieldPsi2sPt)
+    corrYieldPsi2sPt = corrYieldPsi2sPt / brPsi2sToMuMu
+    statCorrYieldPsi2sPt = statCorrYieldPsi2sPt / brPsi2sToMuMu
+    systCorrYieldPsi2sPt = systCorrYieldPsi2sPt / brPsi2sToMuMu
+
+    csPsi2sOverJpsiPt, statCsPsi2sOverJpsiPt = PropagateErrorsOnRatio(corrYieldJpsiPt, statCorrYieldJpsiPt, corrYieldPsi2sPt, statCorrYieldPsi2sPt)
+    csPsi2sOverJpsiPt, systCsPsi2sOverJpsiPt = PropagateErrorsOnRatio(corrYieldJpsiPt, systCorrYieldJpsiPt, corrYieldPsi2sPt, systCorrYieldPsi2sPt)
+
+    csRatioPsi2sOverJpsiPt = np.zeros((len(ptMin),), dtype=float)
+    statCsRatioPsi2sOverJpsiPt = np.zeros((len(ptMin),), dtype=float)
+    systCsRatioPsi2sOverJpsiPt = np.zeros((len(ptMin),), dtype=float)
+
+    for iPt in range(0, len(ptMin)):
+        relStatYield = statRatioPsi2sOverJpsiPt[iPt] / ratioPsi2sOverJpsiPt[iPt]
+        relSystYield = systRatioPsi2sOverJpsiPt[iPt] / ratioPsi2sOverJpsiPt[iPt]
+        relStatAxe = statAxeRatioPsi2sOverJpsiPt[iPt] / axeRatioPsi2sOverJpsiPt[iPt]
+        relSystAxe = systAxeRatioPsi2sOverJpsiPt[iPt] / axeRatioPsi2sOverJpsiPt[iPt]
+        value = ratioPsi2sOverJpsiPt[iPt] / axeRatioPsi2sOverJpsiPt[iPt]
+        csRatioPsi2sOverJpsiPt[iPt] = (value * (brJpsiToMuMu / brPsi2sToMuMu))
+        statCsRatioPsi2sOverJpsiPt[iPt] = ((value * math.sqrt(relStatYield * relStatYield + relStatAxe * relStatAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
+        systCsRatioPsi2sOverJpsiPt[iPt] = ((value * math.sqrt(relSystYield * relSystYield + relSystAxe * relSystAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
+
+    graStatCsPsi2sOverJpsiPt = TGraphErrors(len(ptMin), ptCentr, csPsi2sOverJpsiPt, ptWidth, statCsPsi2sOverJpsiPt)
+    SetGraStat(graStatCsPsi2sOverJpsiPt, 20, ROOT.kBlack)
+
+    graSystCsPsi2sOverJpsiPt = TGraphErrors(len(ptMin), ptCentr, csPsi2sOverJpsiPt, ptWidth, systCsPsi2sOverJpsiPt)
+    SetGraSyst(graSystCsPsi2sOverJpsiPt, 20, ROOT.kBlack)
+
+    graStatCsRatioPsi2sOverJpsiPt = TGraphErrors(len(ptMin), ptCentr, csRatioPsi2sOverJpsiPt, ptWidth, statCsRatioPsi2sOverJpsiPt)
+    SetGraStat(graStatCsRatioPsi2sOverJpsiPt, 20, ROOT.kRed)
+
+    print(csRatioPsi2sOverJpsiPt)
+
+    graSystCsRatioPsi2sOverJpsiPt = TGraphErrors(len(ptMin), ptCentr, csRatioPsi2sOverJpsiPt, ptWidth, systCsRatioPsi2sOverJpsiPt)
+    SetGraSyst(graSystCsRatioPsi2sOverJpsiPt, 20, ROOT.kRed)
+
+    graCsPsi2sOverJpsiTheorCsNloPt = ROOT.TGraphAsymmErrors(len(ptMinTheor), ptCentrTheor, csPsi2sOverJpsiTheorCsNloPt, ptWidthTheor, ptWidthTheor, minCsPsi2sOverJpsiTheorCsNloPt, maxCsPsi2sOverJpsiTheorCsNloPt)
+    graCsPsi2sOverJpsiTheorCsNloPt.SetFillStyle(3353)
+    graCsPsi2sOverJpsiTheorCsNloPt.SetFillColorAlpha(ROOT.kAzure+2, 0.5)
+    graCsPsi2sOverJpsiTheorCsNloPt.SetLineColor(ROOT.kAzure+2)
+
+    graCsPsi2sOverJpsiTheorCsCoNloPt = ROOT.TGraphAsymmErrors(len(ptMinTheor), ptCentrTheor, csPsi2sOverJpsiTheorCsCoNloPt, ptWidthTheor, ptWidthTheor, minCsPsi2sOverJpsiTheorCsCoNloPt, maxCsPsi2sOverJpsiTheorCsCoNloPt)
+    graCsPsi2sOverJpsiTheorCsCoNloPt.SetFillStyle(3353)
+    graCsPsi2sOverJpsiTheorCsCoNloPt.SetFillColorAlpha(ROOT.kRed+1, 0.5)
+    graCsPsi2sOverJpsiTheorCsCoNloPt.SetLineColor(ROOT.kRed+1)
+
+
+    histStatYieldJpsiPt = TH1F("histStatYieldJpsiPt", "", len(ptArr)-1, ptArr)
+    for i in range(0, len(ptArr)-1) : histStatYieldJpsiPt.SetBinContent(i+1, yieldJpsiPt[i]), histStatYieldJpsiPt.SetBinError(i+1, statYieldJpsiPt[i])
+    SetGraStat(histStatYieldJpsiPt, 20, ROOT.kRed+1)
+    histStatYieldJpsiPt.Scale(1, "WIDTH")
+
+    histSystYieldJpsiPt = TH1F("histSystYieldJpsiPt", "", len(ptArr)-1, ptArr)
+    for i in range(0, len(ptArr)-1) : histSystYieldJpsiPt.SetBinContent(i+1, yieldJpsiPt[i]), histSystYieldJpsiPt.SetBinError(i+1, systYieldJpsiPt[i])
+    SetGraSyst(histSystYieldJpsiPt, 20, ROOT.kRed+1)
+    histSystYieldJpsiPt.Scale(1, "WIDTH")
+
+    histStatYieldPsi2sPt = TH1F("histStatYieldPsi2sPt", "", len(ptArr)-1, ptArr)
+    for i in range(0, len(ptArr)-1) : histStatYieldPsi2sPt.SetBinContent(i+1, yieldPsi2sPt[i]), histStatYieldPsi2sPt.SetBinError(i+1, statYieldPsi2sPt[i])
+    SetGraStat(histStatYieldPsi2sPt, 20, ROOT.kAzure+4)
+    histStatYieldPsi2sPt.Scale(1, "WIDTH")
+
+    histSystYieldPsi2sPt = TH1F("histSystYieldPsi2sPt", "", len(ptArr)-1, ptArr)
+    for i in range(0, len(ptArr)-1) : histSystYieldPsi2sPt.SetBinContent(i+1, yieldPsi2sPt[i]), histSystYieldPsi2sPt.SetBinError(i+1, systYieldPsi2sPt[i])
+    SetGraSyst(histSystYieldPsi2sPt, 20, ROOT.kAzure+4)
+    histSystYieldPsi2sPt.Scale(1, "WIDTH")
+
+    # Raw yield
+    legendYieldJpsiVsPsi2sPt = TLegend(0.69, 0.59, 0.89, 0.79, " ", "brNDC")
+    SetLegend(legendYieldJpsiVsPsi2sPt)
+    legendYieldJpsiVsPsi2sPt.AddEntry(histSystYieldJpsiPt, "J/#psi", "FP")
+    legendYieldJpsiVsPsi2sPt.AddEntry(histSystYieldPsi2sPt, "#psi(2S)", "FP")
+
+    canvasYieldsPt = TCanvas("canvasYieldsPt", "canvasYieldsPt", 800, 600)
+    ROOT.gPad.SetLogy(1)
+    histGridYieldJpsiPt  = TH2F("histGridYieldJpsiPt", "", 100, 0, 20, 100, 10, 1e7)
+    histGridYieldJpsiPt.GetXaxis().SetTitle("#it{p}_{T} (Gev/#it{c})")
+    histGridYieldJpsiPt.GetYaxis().SetTitle("d^{2}#it{N} / d#it{p}_{T} d#it{y} (GeV/#it{c}^{-1})")
+    histGridYieldJpsiPt.Draw()
+    histSystYieldJpsiPt.Draw("E2 SAME")
+    histStatYieldJpsiPt.Draw("EP SAME")
+    histSystYieldPsi2sPt.Draw("E2 SAME")
+    histStatYieldPsi2sPt.Draw("EP SAME")
+    legendYieldJpsiVsPsi2sPt.Draw("SAME")
+    letexTitle.DrawLatex(0.40, 0.86, "ALICE Preliminary, #sqrt{#it{s}} = 13.6 TeV")
+    letexTitle.DrawLatex(0.40, 0.80, "J/#psi, #psi(2S) #rightarrow #mu^{+}#mu^{-}, 2.5 < #it{y} < 4")
+    canvasYieldsPt.Update()
+
+    # Corrected ratio
+    legendCsPsi2sOverJpsiPt = TLegend(0.18, 0.2, 0.35, 0.42, " ", "brNDC")
+    SetLegend(legendCsPsi2sOverJpsiPt)
+    legendCsPsi2sOverJpsiPt.AddEntry(graCsPsi2sOverJpsiTheorCsNloPt,"CS, NLO","F")
+    legendCsPsi2sOverJpsiPt.AddEntry(graCsPsi2sOverJpsiTheorCsCoNloPt,"CS + CO, NLO","F")
+    legendCsPsi2sOverJpsiPt.AddEntry(graSystCsPsi2sOverJpsiPt,"Data","FP")
+
+    canvasCsPsi2sOverJpsiPt = TCanvas("canvasCsPsi2sOverJpsiPt", "canvasCsPsi2sOverJpsiPt", 800, 600)
+    ROOT.gPad.SetLogy(1)
+    histGridCsPsi2sOverJpsiPt  = TH2F("histGridCsPsi2sOverJpsiPt", "", 100, 0., 20., 100, 0.001, 1)
+    histGridCsPsi2sOverJpsiPt.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+    histGridCsPsi2sOverJpsiPt.GetYaxis().SetTitle("(d^{2}#sigma_{#psi(2S)} / d#it{p}_{T} d#it{y}) / (d^{2}#sigma_{J/#psi} / d#it{p}_{T} d#it{y})")
+    histGridCsPsi2sOverJpsiPt.Draw()
+    graCsPsi2sOverJpsiTheorCsNloPt.Draw("L SAME")
+    graCsPsi2sOverJpsiTheorCsCoNloPt.Draw("E2 SAME")
+    graSystCsPsi2sOverJpsiPt.Draw("E2 SAME")
+    graStatCsPsi2sOverJpsiPt.Draw("EP SAME")
+
+    graSystCsRatioPsi2sOverJpsiPt.Draw("E2 SAME")
+    graStatCsRatioPsi2sOverJpsiPt.Draw("EP SAME")
+
+    legendCsPsi2sOverJpsiPt.Draw("EP SAME")
+    letexTitle.DrawLatex(0.18, 0.46, "ALICE Preliminary, #sqrt{#it{s}} = 13.6 TeV")
+    letexTitle.DrawLatex(0.18, 0.40, "J/#psi, #psi(2S) #rightarrow #mu^{+}#mu^{-}, 2.5 < #it{y} < 4")
+    canvasCsPsi2sOverJpsiPt.Update()
+
+    # y-dependence
+    dfYieldJpsiY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/{}/sig_Jpsi_vs_y.txt'.format(inputDir), sep=' ')
+    yMin = dfYieldJpsiY["x_min"].to_numpy()
+    yMax = dfYieldJpsiY["x_max"].to_numpy()
+    yCentr = (yMin + yMax) / 2.
+    yWidth = (yMax - yMin) / 2.
+    yArr = np.append(yMin, yMax[len(yMin)-1],)
+    yieldJpsiY = dfYieldJpsiY["val"].to_numpy()
+    statYieldJpsiY = dfYieldJpsiY["stat"].to_numpy()
+    systYieldJpsiY = dfYieldJpsiY["syst"].to_numpy()
+    print("Sum J/psi vs pT: ", sum(yieldJpsiY))
+
+    dfYieldPsi2sY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/{}/sig_Psi2s_vs_y.txt'.format(inputDir), sep=' ')
+    yieldPsi2sY = dfYieldPsi2sY["val"].to_numpy()
+    statYieldPsi2sY = dfYieldPsi2sY["stat"].to_numpy()
+    systYieldPsi2sY = dfYieldPsi2sY["syst"].to_numpy()
+    print("Sum J/psi vs pT: ", sum(yieldPsi2sY))
+
+    dfAxeJpsiY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/axe_ideal_Jpsi_vs_y.txt', sep=' ')
+    axeJpsiY = dfAxeJpsiY["val"].to_numpy()
+    statAxeJpsiY = dfAxeJpsiY["stat"].to_numpy()
+    systAxeJpsiY = dfAxeJpsiY["syst"].to_numpy()
+
+    dfAxePsi2sY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/axe_ideal_Psi2s_vs_y.txt', sep=' ')
+    axePsi2sY = dfAxePsi2sY["val"].to_numpy()
+    statAxePsi2sY = dfAxePsi2sY["stat"].to_numpy()
+    systAxePsi2sY = dfAxePsi2sY["syst"].to_numpy()
+
+    dfCsPsi2sOverJpsiTheorCsNloY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/theory_predictions/cs_nlo_y.txt', sep=' ')
+    yMinTheor = dfCsPsi2sOverJpsiTheorCsNloY["x_min"].to_numpy()
+    yMaxTheor = dfCsPsi2sOverJpsiTheorCsNloY["x_max"].to_numpy()
+    yCentrTheor = (yMinTheor + yMaxTheor) / 2.
+    yWidthTheor = (yMaxTheor - yMinTheor) / 2.
+    csPsi2sOverJpsiTheorCsNloY = dfCsPsi2sOverJpsiTheorCsNloY["val"].to_numpy()
+    minCsPsi2sOverJpsiTheorCsNloY = dfCsPsi2sOverJpsiTheorCsNloY["val_min"].to_numpy()
+    maxCsPsi2sOverJpsiTheorCsNloY = dfCsPsi2sOverJpsiTheorCsNloY["val_max"].to_numpy()
+
+    dfCsPsi2sOverJpsiTheorCsCoNloY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/theory_predictions/cs_co_nlo_y.txt', sep=' ')
+    csPsi2sOverJpsiTheorCsCoNloY = dfCsPsi2sOverJpsiTheorCsCoNloY["val"].to_numpy()
+    minCsPsi2sOverJpsiTheorCsCoNloY = dfCsPsi2sOverJpsiTheorCsCoNloY["val_min"].to_numpy()
+    maxCsPsi2sOverJpsiTheorCsCoNloY = dfCsPsi2sOverJpsiTheorCsCoNloY["val_max"].to_numpy()
+
+    corrYieldJpsiY, statCorrYieldJpsiY = PropagateErrorsOnRatio(axeJpsiY, statAxeJpsiY, yieldJpsiY, statYieldJpsiY)
+    corrYieldJpsiY, systCorrYieldJpsiY = PropagateErrorsOnRatio(axeJpsiY, systAxeJpsiY, yieldJpsiY, systYieldJpsiY)
+    corrYieldJpsiY = corrYieldJpsiY / brJpsiToMuMu
+    statCorrYieldJpsiY = statCorrYieldJpsiY / brJpsiToMuMu
+    systCorrYieldJpsiY = systCorrYieldJpsiY / brJpsiToMuMu
+
+    corrYieldPsi2sY, statCorrYieldPsi2sY = PropagateErrorsOnRatio(axePsi2sY, statAxePsi2sY, yieldPsi2sY, statYieldPsi2sY)
+    corrYieldPsi2sY, systCorrYieldPsi2sY = PropagateErrorsOnRatio(axePsi2sY, systAxePsi2sY, yieldPsi2sY, systYieldPsi2sY)
+    corrYieldPsi2sY = corrYieldPsi2sY / brPsi2sToMuMu
+    statCorrYieldPsi2sY = statCorrYieldPsi2sY / brPsi2sToMuMu
+    systCorrYieldPsi2sY = systCorrYieldPsi2sY / brPsi2sToMuMu
+
+    csPsi2sOverJpsiY, statCsPsi2sOverJpsiY = PropagateErrorsOnRatio(corrYieldJpsiY, statCorrYieldJpsiY, corrYieldPsi2sY, statCorrYieldPsi2sY)
+    csPsi2sOverJpsiY, systCsPsi2sOverJpsiY = PropagateErrorsOnRatio(corrYieldJpsiY, systCorrYieldJpsiY, corrYieldPsi2sY, systCorrYieldPsi2sY)
+
+
+    graStatCsPsi2sOverJpsiY = TGraphErrors(len(yMin), yCentr, csPsi2sOverJpsiY, yWidth, statCsPsi2sOverJpsiY)
+    SetGraStat(graStatCsPsi2sOverJpsiY, 20, ROOT.kBlack)
+
+    graSystCsPsi2sOverJpsiY = TGraphErrors(len(yMin), yCentr, csPsi2sOverJpsiY, yWidth, systCsPsi2sOverJpsiY)
+    SetGraSyst(graSystCsPsi2sOverJpsiY, 20, ROOT.kBlack)
+
+    graCsPsi2sOverJpsiTheorCsNloY = ROOT.TGraphAsymmErrors(len(yMinTheor), yCentrTheor, csPsi2sOverJpsiTheorCsNloY, yWidthTheor, yWidthTheor, minCsPsi2sOverJpsiTheorCsNloY, maxCsPsi2sOverJpsiTheorCsNloY)
+    graCsPsi2sOverJpsiTheorCsNloY.SetFillStyle(3353)
+    graCsPsi2sOverJpsiTheorCsNloY.SetFillColorAlpha(ROOT.kAzure+2, 0.5)
+    graCsPsi2sOverJpsiTheorCsNloY.SetLineColor(ROOT.kAzure+2)
+
+    graCsPsi2sOverJpsiTheorCsCoNloY = ROOT.TGraphAsymmErrors(len(yMinTheor), yCentrTheor, csPsi2sOverJpsiTheorCsCoNloY, yWidthTheor, yWidthTheor, minCsPsi2sOverJpsiTheorCsCoNloY, maxCsPsi2sOverJpsiTheorCsCoNloY)
+    graCsPsi2sOverJpsiTheorCsCoNloY.SetFillStyle(3353)
+    graCsPsi2sOverJpsiTheorCsCoNloY.SetFillColorAlpha(ROOT.kRed+1, 0.5)
+    graCsPsi2sOverJpsiTheorCsCoNloY.SetLineColor(ROOT.kRed+1)
+
+
+    histStatYieldJpsiY = TH1F("histStatYieldJpsiY", "", len(yArr)-1, yArr)
+    for i in range(0, len(yArr)-1) : histStatYieldJpsiY.SetBinContent(i+1, yieldJpsiY[i]), histStatYieldJpsiY.SetBinError(i+1, statYieldJpsiY[i])
+    SetGraStat(histStatYieldJpsiY, 20, ROOT.kRed+1)
+    histStatYieldJpsiY.Scale(1, "WIDTH")
+
+    histSystYieldJpsiY = TH1F("histSystYieldJpsiY", "", len(yArr)-1, yArr)
+    for i in range(0, len(yArr)-1) : histSystYieldJpsiY.SetBinContent(i+1, yieldJpsiY[i]), histSystYieldJpsiY.SetBinError(i+1, systYieldJpsiY[i])
+    SetGraSyst(histSystYieldJpsiY, 20, ROOT.kRed+1)
+    histSystYieldJpsiY.Scale(1, "WIDTH")
+
+    histStatYieldPsi2sY = TH1F("histStatYieldPsi2sY", "", len(yArr)-1, yArr)
+    for i in range(0, len(yArr)-1) : histStatYieldPsi2sY.SetBinContent(i+1, yieldPsi2sY[i]), histStatYieldPsi2sY.SetBinError(i+1, statYieldPsi2sY[i])
+    SetGraStat(histStatYieldPsi2sY, 20, ROOT.kAzure+4)
+    histStatYieldPsi2sY.Scale(1, "WIDTH")
+
+    histSystYieldPsi2sY = TH1F("histSystYieldPsi2sY", "", len(yArr)-1, yArr)
+    for i in range(0, len(yArr)-1) : histSystYieldPsi2sY.SetBinContent(i+1, yieldPsi2sY[i]), histSystYieldPsi2sY.SetBinError(i+1, systYieldPsi2sY[i])
+    SetGraSyst(histSystYieldPsi2sY, 20, ROOT.kAzure+4)
+    histSystYieldPsi2sY.Scale(1, "WIDTH")
+
+
+    # Raw yield
+    legendYieldJpsiVsPsi2sY = TLegend(0.18, 0.2, 0.35, 0.42, " ", "brNDC")
+    SetLegend(legendYieldJpsiVsPsi2sY)
+    legendYieldJpsiVsPsi2sY.AddEntry(histSystYieldJpsiY, "J/#psi", "FP")
+    legendYieldJpsiVsPsi2sY.AddEntry(histSystYieldPsi2sY, "#psi(2S)", "FP")
+
+    canvasYieldsY = TCanvas("canvasYieldsY", "canvasYieldsY", 800, 600)
+    ROOT.gPad.SetLogy(1)
+    histGridYieldJpsiY  = TH2F("histGridYieldJpsiY", "", 100, 2.5, 4, 100, 10, 1e7)
+    histGridYieldJpsiY.GetXaxis().SetTitle("#it{y}")
+    histGridYieldJpsiY.GetYaxis().SetTitle("d#it{N} / d#it{y}")
+    histGridYieldJpsiY.Draw()
+    histSystYieldJpsiY.Draw("E2 SAME")
+    histStatYieldJpsiY.Draw("EP SAME")
+    histSystYieldPsi2sY.Draw("E2 SAME")
+    histStatYieldPsi2sY.Draw("EP SAME")
+    legendYieldJpsiVsPsi2sY.Draw("SAME")
+    letexTitle.DrawLatex(0.18, 0.42, "ALICE Preliminary, #sqrt{#it{s}} = 13.6 TeV")
+    letexTitle.DrawLatex(0.18, 0.36, "J/#psi, #psi(2S) #rightarrow #mu^{+}#mu^{-}")
+    canvasYieldsY.Update()
+
+    # Corrected ratio
+    legendCsPsi2sOverJpsiY = TLegend(0.18, 0.2, 0.35, 0.42, " ", "brNDC")
+    SetLegend(legendCsPsi2sOverJpsiY)
+    legendCsPsi2sOverJpsiY.AddEntry(graCsPsi2sOverJpsiTheorCsNloY,"CS, NLO, 4 < #it{p}_{T} < 20 GeV/#it{c}", "F")
+    legendCsPsi2sOverJpsiY.AddEntry(graCsPsi2sOverJpsiTheorCsCoNloY,"CS + CO, NLO, 4 < #it{p}_{T} < 20 GeV/#it{c}", "F")
+    legendCsPsi2sOverJpsiY.AddEntry(graSystCsPsi2sOverJpsiY,"Data, #it{p}_{T} < 20 GeV/#it{c}","FP")
+
+    canvasCsPsi2sOverJpsiY = TCanvas("canvasCsPsi2sOverJpsiY", "canvasCsPsi2sOverJpsiY", 800, 600)
+    ROOT.gPad.SetLogy(1)
+    histGridCsPsi2sOverJpsiY  = TH2F("histGridCsPsi2sOverJpsiY", "", 100, 2.5, 4, 100, 0.001, 1)
+    histGridCsPsi2sOverJpsiY.GetXaxis().SetTitle("#it{y}")
+    histGridCsPsi2sOverJpsiY.GetYaxis().SetTitle("(d#sigma_{#psi(2S)} / d#it{y}) / (d#sigma_{J/#psi} / d#it{y})")
+    histGridCsPsi2sOverJpsiY.Draw()
+    graCsPsi2sOverJpsiTheorCsNloY.Draw("L SAME")
+    graCsPsi2sOverJpsiTheorCsCoNloY.Draw("E2 SAME")
+    graSystCsPsi2sOverJpsiY.Draw("E2 SAME")
+    graStatCsPsi2sOverJpsiY.Draw("EP SAME")
+    legendCsPsi2sOverJpsiY.Draw("EP SAME")
+    letexTitle.DrawLatex(0.18, 0.46, "ALICE Preliminary, #sqrt{#it{s}} = 13.6 TeV")
+    letexTitle.DrawLatex(0.18, 0.40, "J/#psi, #psi(2S) #rightarrow #mu^{+}#mu^{-}")
+    canvasCsPsi2sOverJpsiY.Update()
+
+    input()
+    canvasYieldsPt.SaveAs("yieldsPt.pdf")
+    canvasCsPsi2sOverJpsiPt.SaveAs("csPsi2sOverJpsiPt.pdf")
+    canvasYieldsY.SaveAs("yieldsY.pdf")
+    canvasCsPsi2sOverJpsiY.SaveAs("csPsi2sOverJpsiY.pdf")
+
+
+
+
+if __name__ == '__main__':
+    main()
