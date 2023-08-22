@@ -1,0 +1,2 @@
+x_min x_max val stat syst 
+0 20 0.29292 0.000514672 0
