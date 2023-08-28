@@ -30,8 +30,8 @@ def main():
     letexTitle.SetNDC()
     letexTitle.SetTextFont(42)
 
-    ptMin = "3"
-    ptMax = "4"
+    ptMin = "2"
+    ptMax = "3"
     path = "/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/output/analysis/Run3_full_stat_apass4_data_run3_tails_matchedMchMid"
     histName = "hist_mass_pt_all_histo_PairsMuonSEPM_matchedMchMid_pt_" + ptMin + "_" + ptMax
     fInName = "CB2_CB2_VWG__2.1_4.9"

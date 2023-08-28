@@ -29,14 +29,23 @@ def main():
     letexTitle.SetNDC()
     letexTitle.SetTextFont(42)
 
-
     inputDir  = "systematics_full_stat_matchedMchMid"
 
     brJpsiToMuMu = 0.05961
     brPsi2sToMuMu = 0.008
     
     # Global systematics
-    # TO BE COMPLETED
+    systBrJpsiToMuMu = 0.00033
+    systBrPsi2sToMuMu = 0.0006
+    systRelBrJpsiToMuMu = systBrJpsiToMuMu / brJpsiToMuMu
+    systRelBrPsi2sToMuMu = systBrPsi2sToMuMu / brPsi2sToMuMu
+    systRelBr = math.sqrt(systRelBrJpsiToMuMu * systRelBrJpsiToMuMu + systRelBrPsi2sToMuMu * systRelBrPsi2sToMuMu)
+    systRelPsi2sWidth = 0.05
+    relGlobal = math.sqrt(systRelBr * systRelBr + systRelPsi2sWidth * systRelPsi2sWidth)
+
+    systRelAxeRealisticVsIdealY = [00.012, 0.017, 0.006, 0.000, 0.003, 0.015]
+    systRelAxeRealisticVsIdealPt = [0.009, 0.014, 0.013, 0.002, 0.000, 0.000, 0.012, 0.023]
+    systRelAxeRealisticVsIdealInt = [0.008]
 
     # pt-dependence
     dfYieldJpsiPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/{}/sig_Jpsi_vs_pt.txt'.format(inputDir), sep=' ')
@@ -56,22 +65,27 @@ def main():
     systYieldPsi2sPt = dfYieldPsi2sPt["syst"].to_numpy()
     print("Sum J/psi vs pT: ", sum(yieldPsi2sPt))
 
-    dfRatioPsi2sOverJpsiPt = pd.read_csv('/Users/lucamicheletti/cernbox/run3_Psi2s_over_Jpsi/final_results_LHC22all_periods/Comparison_methods/RatioValuesCorentin.txt', sep=' ')
+    dfRatioPsi2sOverJpsiPt = pd.read_csv('/Users/lucamicheletti/cernbox/run3_Psi2s_over_Jpsi/final_results_LHC22all_periods/Comparison_methods/RatioValuesCorentinPt.txt', sep=' ')
+    ptMin = dfYieldJpsiPt["x_min"].to_numpy()
+    ptMax = dfYieldJpsiPt["x_max"].to_numpy()
+    ptCentr = (ptMin + ptMax) / 2.
+    ptWidth = (ptMax - ptMin) / 2.
+    ptArr = np.append(ptMin, ptMax[len(ptMin)-1],)
     ratioPsi2sOverJpsiPt = dfRatioPsi2sOverJpsiPt["val"].to_numpy()
     statRatioPsi2sOverJpsiPt = dfRatioPsi2sOverJpsiPt["stat"].to_numpy()
     systRatioPsi2sOverJpsiPt = dfRatioPsi2sOverJpsiPt["syst"].to_numpy()
 
-    dfAxeJpsiPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/axe_ideal_Jpsi_vs_pt.txt', sep=' ')
+    dfAxeJpsiPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/ideal_no_cut/axe_Jpsi_vs_pt.txt', sep=' ')
     axeJpsiPt = dfAxeJpsiPt["val"].to_numpy()
     statAxeJpsiPt = dfAxeJpsiPt["stat"].to_numpy()
     systAxeJpsiPt = dfAxeJpsiPt["syst"].to_numpy()
 
-    dfAxePsi2sPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/axe_ideal_Psi2s_vs_pt.txt', sep=' ')
+    dfAxePsi2sPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/ideal_no_cut/axe_Psi2s_vs_pt.txt', sep=' ')
     axePsi2sPt = dfAxePsi2sPt["val"].to_numpy()
     statAxePsi2sPt = dfAxePsi2sPt["stat"].to_numpy()
     systAxePsi2sPt = dfAxePsi2sPt["syst"].to_numpy()
 
-    dfAxeRatioPsi2sOverJpsiPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/axe_ideal_Psi2s_over_Jpsi_vs_pt.txt', sep=' ')
+    dfAxeRatioPsi2sOverJpsiPt = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/ideal_no_cut/axe_Psi2s_over_Jpsi_vs_pt.txt', sep=' ')
     axeRatioPsi2sOverJpsiPt = dfAxeRatioPsi2sOverJpsiPt["val"].to_numpy()
     statAxeRatioPsi2sOverJpsiPt = dfAxeRatioPsi2sOverJpsiPt["stat"].to_numpy()
     systAxeRatioPsi2sOverJpsiPt = dfAxeRatioPsi2sOverJpsiPt["syst"].to_numpy()
@@ -91,21 +105,6 @@ def main():
     minCsPsi2sOverJpsiTheorCsCoNloPt = dfCsPsi2sOverJpsiTheorCsCoNloPt["val_min"].to_numpy()
     maxCsPsi2sOverJpsiTheorCsCoNloPt = dfCsPsi2sOverJpsiTheorCsCoNloPt["val_max"].to_numpy()
 
-    corrYieldJpsiPt, statCorrYieldJpsiPt = PropagateErrorsOnRatio(axeJpsiPt, statAxeJpsiPt, yieldJpsiPt, statYieldJpsiPt)
-    corrYieldJpsiPt, systCorrYieldJpsiPt = PropagateErrorsOnRatio(axeJpsiPt, systAxeJpsiPt, yieldJpsiPt, systYieldJpsiPt)
-    corrYieldJpsiPt = corrYieldJpsiPt / brJpsiToMuMu
-    statCorrYieldJpsiPt = statCorrYieldJpsiPt / brJpsiToMuMu
-    systCorrYieldJpsiPt = systCorrYieldJpsiPt / brJpsiToMuMu
-
-    corrYieldPsi2sPt, statCorrYieldPsi2sPt = PropagateErrorsOnRatio(axePsi2sPt, statAxePsi2sPt, yieldPsi2sPt, statYieldPsi2sPt)
-    corrYieldPsi2sPt, systCorrYieldPsi2sPt = PropagateErrorsOnRatio(axePsi2sPt, systAxePsi2sPt, yieldPsi2sPt, systYieldPsi2sPt)
-    corrYieldPsi2sPt = corrYieldPsi2sPt / brPsi2sToMuMu
-    statCorrYieldPsi2sPt = statCorrYieldPsi2sPt / brPsi2sToMuMu
-    systCorrYieldPsi2sPt = systCorrYieldPsi2sPt / brPsi2sToMuMu
-
-    csPsi2sOverJpsiPt, statCsPsi2sOverJpsiPt = PropagateErrorsOnRatio(corrYieldJpsiPt, statCorrYieldJpsiPt, corrYieldPsi2sPt, statCorrYieldPsi2sPt)
-    csPsi2sOverJpsiPt, systCsPsi2sOverJpsiPt = PropagateErrorsOnRatio(corrYieldJpsiPt, systCorrYieldJpsiPt, corrYieldPsi2sPt, systCorrYieldPsi2sPt)
-
     csRatioPsi2sOverJpsiPt = np.zeros((len(ptMin),), dtype=float)
     statCsRatioPsi2sOverJpsiPt = np.zeros((len(ptMin),), dtype=float)
     systCsRatioPsi2sOverJpsiPt = np.zeros((len(ptMin),), dtype=float)
@@ -118,21 +117,16 @@ def main():
         value = ratioPsi2sOverJpsiPt[iPt] / axeRatioPsi2sOverJpsiPt[iPt]
         csRatioPsi2sOverJpsiPt[iPt] = (value * (brJpsiToMuMu / brPsi2sToMuMu))
         statCsRatioPsi2sOverJpsiPt[iPt] = ((value * math.sqrt(relStatYield * relStatYield + relStatAxe * relStatAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
-        systCsRatioPsi2sOverJpsiPt[iPt] = ((value * math.sqrt(relSystYield * relSystYield + relSystAxe * relSystAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
+        systCsRatioPsi2sOverJpsiPt[iPt] = ((value * math.sqrt(relSystYield * relSystYield + relSystAxe * relSystAxe + systRelAxeRealisticVsIdealPt[iPt] * systRelAxeRealisticVsIdealPt[iPt])) * (brJpsiToMuMu / brPsi2sToMuMu))
 
-    graStatCsPsi2sOverJpsiPt = TGraphErrors(len(ptMin), ptCentr, csPsi2sOverJpsiPt, ptWidth, statCsPsi2sOverJpsiPt)
-    SetGraStat(graStatCsPsi2sOverJpsiPt, 20, ROOT.kBlack)
-
-    graSystCsPsi2sOverJpsiPt = TGraphErrors(len(ptMin), ptCentr, csPsi2sOverJpsiPt, ptWidth, systCsPsi2sOverJpsiPt)
-    SetGraSyst(graSystCsPsi2sOverJpsiPt, 20, ROOT.kBlack)
-
+    for i in range(len(ptMin)):
+        print("%3.2f - %3.2f | %4.3f +/- %4.3f +/- %4.3f " % (ptMin[i], ptMax[i], csRatioPsi2sOverJpsiPt[i], statCsRatioPsi2sOverJpsiPt[i], systCsRatioPsi2sOverJpsiPt[i]))
+    
     graStatCsRatioPsi2sOverJpsiPt = TGraphErrors(len(ptMin), ptCentr, csRatioPsi2sOverJpsiPt, ptWidth, statCsRatioPsi2sOverJpsiPt)
-    SetGraStat(graStatCsRatioPsi2sOverJpsiPt, 20, ROOT.kRed)
-
-    print(csRatioPsi2sOverJpsiPt)
+    SetGraStat(graStatCsRatioPsi2sOverJpsiPt, 20, ROOT.kBlack)
 
     graSystCsRatioPsi2sOverJpsiPt = TGraphErrors(len(ptMin), ptCentr, csRatioPsi2sOverJpsiPt, ptWidth, systCsRatioPsi2sOverJpsiPt)
-    SetGraSyst(graSystCsRatioPsi2sOverJpsiPt, 20, ROOT.kRed)
+    SetGraSyst(graSystCsRatioPsi2sOverJpsiPt, 20, ROOT.kBlack)
 
     graCsPsi2sOverJpsiTheorCsNloPt = ROOT.TGraphAsymmErrors(len(ptMinTheor), ptCentrTheor, csPsi2sOverJpsiTheorCsNloPt, ptWidthTheor, ptWidthTheor, minCsPsi2sOverJpsiTheorCsNloPt, maxCsPsi2sOverJpsiTheorCsNloPt)
     graCsPsi2sOverJpsiTheorCsNloPt.SetFillStyle(3353)
@@ -191,7 +185,7 @@ def main():
     SetLegend(legendCsPsi2sOverJpsiPt)
     legendCsPsi2sOverJpsiPt.AddEntry(graCsPsi2sOverJpsiTheorCsNloPt,"CS, NLO","F")
     legendCsPsi2sOverJpsiPt.AddEntry(graCsPsi2sOverJpsiTheorCsCoNloPt,"CS + CO, NLO","F")
-    legendCsPsi2sOverJpsiPt.AddEntry(graSystCsPsi2sOverJpsiPt,"Data","FP")
+    legendCsPsi2sOverJpsiPt.AddEntry(graSystCsRatioPsi2sOverJpsiPt,"Data","FP")
 
     canvasCsPsi2sOverJpsiPt = TCanvas("canvasCsPsi2sOverJpsiPt", "canvasCsPsi2sOverJpsiPt", 800, 600)
     ROOT.gPad.SetLogy(1)
@@ -201,15 +195,12 @@ def main():
     histGridCsPsi2sOverJpsiPt.Draw()
     graCsPsi2sOverJpsiTheorCsNloPt.Draw("L SAME")
     graCsPsi2sOverJpsiTheorCsCoNloPt.Draw("E2 SAME")
-    graSystCsPsi2sOverJpsiPt.Draw("E2 SAME")
-    graStatCsPsi2sOverJpsiPt.Draw("EP SAME")
-
     graSystCsRatioPsi2sOverJpsiPt.Draw("E2 SAME")
     graStatCsRatioPsi2sOverJpsiPt.Draw("EP SAME")
-
     legendCsPsi2sOverJpsiPt.Draw("EP SAME")
     letexTitle.DrawLatex(0.18, 0.46, "ALICE Preliminary, #sqrt{#it{s}} = 13.6 TeV")
     letexTitle.DrawLatex(0.18, 0.40, "J/#psi, #psi(2S) #rightarrow #mu^{+}#mu^{-}, 2.5 < #it{y} < 4")
+    letexTitle.DrawLatex(0.63, 0.20, "Global unc. = %3.2f %%" % (relGlobal * 100))
     canvasCsPsi2sOverJpsiPt.Update()
 
     # y-dependence
@@ -230,15 +221,25 @@ def main():
     systYieldPsi2sY = dfYieldPsi2sY["syst"].to_numpy()
     print("Sum J/psi vs pT: ", sum(yieldPsi2sY))
 
-    dfAxeJpsiY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/axe_ideal_Jpsi_vs_y.txt', sep=' ')
+    dfRatioPsi2sOverJpsiY = pd.read_csv('/Users/lucamicheletti/cernbox/run3_Psi2s_over_Jpsi/final_results_LHC22all_periods/Comparison_methods/RatioValuesCorentinY.txt', sep=' ')
+    ratioPsi2sOverJpsiY = dfRatioPsi2sOverJpsiY["val"].to_numpy()
+    statRatioPsi2sOverJpsiY = dfRatioPsi2sOverJpsiY["stat"].to_numpy()
+    systRatioPsi2sOverJpsiY = dfRatioPsi2sOverJpsiY["syst"].to_numpy()
+
+    dfAxeJpsiY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/ideal_no_cut/axe_Jpsi_vs_y.txt', sep=' ')
     axeJpsiY = dfAxeJpsiY["val"].to_numpy()
     statAxeJpsiY = dfAxeJpsiY["stat"].to_numpy()
     systAxeJpsiY = dfAxeJpsiY["syst"].to_numpy()
 
-    dfAxePsi2sY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/axe_ideal_Psi2s_vs_y.txt', sep=' ')
+    dfAxePsi2sY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/ideal_no_cut/axe_Psi2s_vs_y.txt', sep=' ')
     axePsi2sY = dfAxePsi2sY["val"].to_numpy()
     statAxePsi2sY = dfAxePsi2sY["stat"].to_numpy()
     systAxePsi2sY = dfAxePsi2sY["syst"].to_numpy()
+
+    dfAxeRatioPsi2sOverJpsiY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/acceptance_efficiency/ideal_no_cut/axe_Psi2s_over_Jpsi_vs_y.txt', sep=' ')
+    axeRatioPsi2sOverJpsiY = dfAxeRatioPsi2sOverJpsiY["val"].to_numpy()
+    statAxeRatioPsi2sOverJpsiY = dfAxeRatioPsi2sOverJpsiY["stat"].to_numpy()
+    systAxeRatioPsi2sOverJpsiY = dfAxeRatioPsi2sOverJpsiY["syst"].to_numpy()
 
     dfCsPsi2sOverJpsiTheorCsNloY = pd.read_csv('/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/theory_predictions/cs_nlo_y.txt', sep=' ')
     yMinTheor = dfCsPsi2sOverJpsiTheorCsNloY["x_min"].to_numpy()
@@ -254,27 +255,29 @@ def main():
     minCsPsi2sOverJpsiTheorCsCoNloY = dfCsPsi2sOverJpsiTheorCsCoNloY["val_min"].to_numpy()
     maxCsPsi2sOverJpsiTheorCsCoNloY = dfCsPsi2sOverJpsiTheorCsCoNloY["val_max"].to_numpy()
 
-    corrYieldJpsiY, statCorrYieldJpsiY = PropagateErrorsOnRatio(axeJpsiY, statAxeJpsiY, yieldJpsiY, statYieldJpsiY)
-    corrYieldJpsiY, systCorrYieldJpsiY = PropagateErrorsOnRatio(axeJpsiY, systAxeJpsiY, yieldJpsiY, systYieldJpsiY)
-    corrYieldJpsiY = corrYieldJpsiY / brJpsiToMuMu
-    statCorrYieldJpsiY = statCorrYieldJpsiY / brJpsiToMuMu
-    systCorrYieldJpsiY = systCorrYieldJpsiY / brJpsiToMuMu
+    csRatioPsi2sOverJpsiY = np.zeros((len(yMin),), dtype=float)
+    statCsRatioPsi2sOverJpsiY = np.zeros((len(yMin),), dtype=float)
+    systCsRatioPsi2sOverJpsiY = np.zeros((len(yMin),), dtype=float)
 
-    corrYieldPsi2sY, statCorrYieldPsi2sY = PropagateErrorsOnRatio(axePsi2sY, statAxePsi2sY, yieldPsi2sY, statYieldPsi2sY)
-    corrYieldPsi2sY, systCorrYieldPsi2sY = PropagateErrorsOnRatio(axePsi2sY, systAxePsi2sY, yieldPsi2sY, systYieldPsi2sY)
-    corrYieldPsi2sY = corrYieldPsi2sY / brPsi2sToMuMu
-    statCorrYieldPsi2sY = statCorrYieldPsi2sY / brPsi2sToMuMu
-    systCorrYieldPsi2sY = systCorrYieldPsi2sY / brPsi2sToMuMu
+    for iY in range(0, len(yMin)):
+        relStatYield = statRatioPsi2sOverJpsiY[iY] / ratioPsi2sOverJpsiY[iY]
+        relSystYield = systRatioPsi2sOverJpsiY[iY] / ratioPsi2sOverJpsiY[iY]
+        relStatAxe = statAxeRatioPsi2sOverJpsiY[iY] / axeRatioPsi2sOverJpsiY[iY]
+        relSystAxe = systAxeRatioPsi2sOverJpsiY[iY] / axeRatioPsi2sOverJpsiY[iY]
+        value = ratioPsi2sOverJpsiY[iY] / axeRatioPsi2sOverJpsiY[iY]
+        csRatioPsi2sOverJpsiY[iY] = (value * (brJpsiToMuMu / brPsi2sToMuMu))
+        statCsRatioPsi2sOverJpsiY[iY] = ((value * math.sqrt(relStatYield * relStatYield + relStatAxe * relStatAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
+        systCsRatioPsi2sOverJpsiY[iY] = ((value * math.sqrt(relSystYield * relSystYield + relSystAxe * relSystAxe + systRelAxeRealisticVsIdealY[iY] * systRelAxeRealisticVsIdealY[iY])) * (brJpsiToMuMu / brPsi2sToMuMu))
 
-    csPsi2sOverJpsiY, statCsPsi2sOverJpsiY = PropagateErrorsOnRatio(corrYieldJpsiY, statCorrYieldJpsiY, corrYieldPsi2sY, statCorrYieldPsi2sY)
-    csPsi2sOverJpsiY, systCsPsi2sOverJpsiY = PropagateErrorsOnRatio(corrYieldJpsiY, systCorrYieldJpsiY, corrYieldPsi2sY, systCorrYieldPsi2sY)
+    print("Mean of the ratio")
+    for i in range(len(yMin)):
+        print("%3.2f - %3.2f | %4.3f +/- %4.3f +/- %4.3f " % (yMin[i], yMax[i], csRatioPsi2sOverJpsiY[i], statCsRatioPsi2sOverJpsiY[i], systCsRatioPsi2sOverJpsiY[i]))
 
+    graStatCsRatioPsi2sOverJpsiY = TGraphErrors(len(yMin), yCentr, csRatioPsi2sOverJpsiY, yWidth, statCsRatioPsi2sOverJpsiY)
+    SetGraStat(graStatCsRatioPsi2sOverJpsiY, 20, ROOT.kBlack)
 
-    graStatCsPsi2sOverJpsiY = TGraphErrors(len(yMin), yCentr, csPsi2sOverJpsiY, yWidth, statCsPsi2sOverJpsiY)
-    SetGraStat(graStatCsPsi2sOverJpsiY, 20, ROOT.kBlack)
-
-    graSystCsPsi2sOverJpsiY = TGraphErrors(len(yMin), yCentr, csPsi2sOverJpsiY, yWidth, systCsPsi2sOverJpsiY)
-    SetGraSyst(graSystCsPsi2sOverJpsiY, 20, ROOT.kBlack)
+    graSystCsRatioPsi2sOverJpsiY = TGraphErrors(len(yMin), yCentr, csRatioPsi2sOverJpsiY, yWidth, systCsRatioPsi2sOverJpsiY)
+    SetGraSyst(graSystCsRatioPsi2sOverJpsiY, 20, ROOT.kBlack)
 
     graCsPsi2sOverJpsiTheorCsNloY = ROOT.TGraphAsymmErrors(len(yMinTheor), yCentrTheor, csPsi2sOverJpsiTheorCsNloY, yWidthTheor, yWidthTheor, minCsPsi2sOverJpsiTheorCsNloY, maxCsPsi2sOverJpsiTheorCsNloY)
     graCsPsi2sOverJpsiTheorCsNloY.SetFillStyle(3353)
@@ -334,7 +337,7 @@ def main():
     SetLegend(legendCsPsi2sOverJpsiY)
     legendCsPsi2sOverJpsiY.AddEntry(graCsPsi2sOverJpsiTheorCsNloY,"CS, NLO, 4 < #it{p}_{T} < 20 GeV/#it{c}", "F")
     legendCsPsi2sOverJpsiY.AddEntry(graCsPsi2sOverJpsiTheorCsCoNloY,"CS + CO, NLO, 4 < #it{p}_{T} < 20 GeV/#it{c}", "F")
-    legendCsPsi2sOverJpsiY.AddEntry(graSystCsPsi2sOverJpsiY,"Data, #it{p}_{T} < 20 GeV/#it{c}","FP")
+    legendCsPsi2sOverJpsiY.AddEntry(graSystCsRatioPsi2sOverJpsiY,"Data, #it{p}_{T} < 20 GeV/#it{c}","FP")
 
     canvasCsPsi2sOverJpsiY = TCanvas("canvasCsPsi2sOverJpsiY", "canvasCsPsi2sOverJpsiY", 800, 600)
     ROOT.gPad.SetLogy(1)
@@ -344,11 +347,12 @@ def main():
     histGridCsPsi2sOverJpsiY.Draw()
     graCsPsi2sOverJpsiTheorCsNloY.Draw("L SAME")
     graCsPsi2sOverJpsiTheorCsCoNloY.Draw("E2 SAME")
-    graSystCsPsi2sOverJpsiY.Draw("E2 SAME")
-    graStatCsPsi2sOverJpsiY.Draw("EP SAME")
+    graSystCsRatioPsi2sOverJpsiY.Draw("E2 SAME")
+    graStatCsRatioPsi2sOverJpsiY.Draw("EP SAME")
     legendCsPsi2sOverJpsiY.Draw("EP SAME")
     letexTitle.DrawLatex(0.18, 0.46, "ALICE Preliminary, #sqrt{#it{s}} = 13.6 TeV")
     letexTitle.DrawLatex(0.18, 0.40, "J/#psi, #psi(2S) #rightarrow #mu^{+}#mu^{-}")
+    letexTitle.DrawLatex(0.63, 0.20, "Global unc. = %3.2f %%" % (relGlobal * 100))
     canvasCsPsi2sOverJpsiY.Update()
 
     input()

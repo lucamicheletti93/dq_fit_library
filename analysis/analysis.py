@@ -22,6 +22,15 @@ outputDir = "figures_full_stat_matchedMchMid"
 brJpsiToMuMu = 0.05961
 brPsi2sToMuMu = 0.008
 
+# Global systematics
+systRelBrJpsiToMuMu = 0.033 / brJpsiToMuMu
+systRelBrPsi2sToMuMu = 0.0006 / brPsi2sToMuMu
+systRelBr = math.sqrt(systRelBrJpsiToMuMu * systRelBrJpsiToMuMu + systRelBrPsi2sToMuMu * systRelBrPsi2sToMuMu)
+systRelPsi2sWidth = 0.05
+systRelAxeRealisticVsIdealY = [00.012, 0.017, 0.006, 0.000, 0.003, 0.015]
+systRelAxeRealisticVsIdealPt = [0.009, 0.014, 0.013, 0.002, 0.000, 0.000, 0.012, 0.023]
+systRelAxeRealisticVsIdealInt = [0.008]
+
 ################
 ################
 def intResults():
@@ -68,6 +77,32 @@ def intResults():
     statAxeRatioPsi2sOverJpsiInt = dfAxeRatioPsi2sOverJpsiInt["stat"].to_numpy()
     systAxeRatioPsi2sOverJpsiInt = dfAxeRatioPsi2sOverJpsiInt["syst"].to_numpy()
 
+
+    for i in range(0, 1):
+        relStatJpsi = (statAxeJpsiInt[i] / axeJpsiInt[i]) * 100
+        relSystJpsi = (systAxeJpsiInt[i] / axeJpsiInt[i]) * 100
+        relStatPsi2s = (statAxePsi2sInt[i] / axePsi2sInt[i]) * 100
+        relSystPsi2s = (systAxePsi2sInt[i] / axePsi2sInt[i]) * 100
+        relStatRatioPsi2sOverJpsi = (statAxeRatioPsi2sOverJpsiInt[i] / axeRatioPsi2sOverJpsiInt[i]) * 100
+        relSystRatioPsi2sOverJpsi = (systAxeRatioPsi2sOverJpsiInt[i] / axeRatioPsi2sOverJpsiInt[i]) * 100
+        print("& %3.2f - %3.2f & %4.3f $\pm$ %4.3f $\pm$ %4.3f & %4.3f $\pm$ %4.3f $\pm$ %4.3f & %4.3f $\pm$ %4.3f $\pm$ %4.3f ??" % (intMin, intMax, 
+            axeJpsiInt[i], statAxeJpsiInt[i], systAxeJpsiInt[i],
+            axePsi2sInt[i], statAxePsi2sInt[i], systAxePsi2sInt[i],
+            axeRatioPsi2sOverJpsiInt[i], statAxeRatioPsi2sOverJpsiInt[i], systAxeRatioPsi2sOverJpsiInt[i]))
+    
+    print("--------- systematics ---------")
+    for i in range(0, 1):
+        relSystYieldJpsi = (systYieldJpsiInt[i] / yieldJpsiInt[i]) * 100
+        relSystYieldPsi2s = (systYieldPsi2sInt[i] / yieldPsi2sInt[i]) * 100
+        relSystYieldRatioPsi2sOverJpsi = (systRatioPsi2sOverJpsiInt[i] / ratioPsi2sOverJpsiInt[i]) * 100
+        relSystAxeJpsi = (systAxeJpsiInt[i] / axeJpsiInt[i]) * 100
+        relSystAxePsi2s = (systAxePsi2sInt[i] / axePsi2sInt[i]) * 100
+        relSystAxeRatioPsi2sOverJpsi = (systAxeRatioPsi2sOverJpsiInt[i] / axeRatioPsi2sOverJpsiInt[i]) * 100
+        print("%3.2f - %3.2f & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% ??" % (intMin, intMax, 
+            relSystYieldJpsi, relSystYieldPsi2s, relSystYieldRatioPsi2sOverJpsi,
+            relSystAxeJpsi, relSystAxePsi2s, relSystAxeRatioPsi2sOverJpsi,
+            systRelAxeRealisticVsIdealInt[i] * 100))
+
     ################################
     # Plot the Ratio Psi(2S) / J/psi
     ################################
@@ -107,7 +142,7 @@ def intResults():
         value = ratioPsi2sOverJpsiInt[iInt] / axeRatioPsi2sOverJpsiInt[iInt]
         csRatioPsi2sOverJpsiInt[iInt] = (value * (brJpsiToMuMu / brPsi2sToMuMu))
         statCsRatioPsi2sOverJpsiInt[iInt] = ((value * math.sqrt(relStatYield * relStatYield + relStatAxe * relStatAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
-        systCsRatioPsi2sOverJpsiInt[iInt] = ((value * math.sqrt(relSystYield * relSystYield + relSystAxe * relSystAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
+        systCsRatioPsi2sOverJpsiInt[iInt] = ((value * math.sqrt(relSystYield * relSystYield + relSystAxe * relSystAxe + systRelAxeRealisticVsIdealY[iInt] * systRelAxeRealisticVsIdealY[iInt])) * (brJpsiToMuMu / brPsi2sToMuMu))
 
     # Print all results for analysis    
 
@@ -139,16 +174,16 @@ def intResults():
     intWidthSqrts = np.array([0.20])
 
     graStatCsRatioInt = TGraphErrors(1, intCentrSqrts, csRatioInt, 0, statCsRatioInt)
-    SetGraStat(graStatCsRatioInt, 20, ROOT.kRed+1)
+    SetGraStat(graStatCsRatioInt, 20, ROOT.kAzure+2)
 
     graSystCsRatioInt = TGraphErrors(1, intCentrSqrts, csRatioInt, intWidthSqrts, systCsRatioInt)
-    SetGraSyst(graSystCsRatioInt, 20, ROOT.kRed+1)
+    SetGraSyst(graSystCsRatioInt, 20, ROOT.kAzure+2)
 
     graStatCsRatioPsi2sOverJpsiInt = TGraphErrors(1, intCentrSqrts, csRatioPsi2sOverJpsiInt, 0, statCsRatioPsi2sOverJpsiInt)
-    SetGraStat(graStatCsRatioPsi2sOverJpsiInt, 20, ROOT.kAzure+2)
+    SetGraStat(graStatCsRatioPsi2sOverJpsiInt, 20, ROOT.kRed+1)
 
     graSystCsRatioPsi2sOverJpsiInt = TGraphErrors(1, intCentrSqrts, csRatioPsi2sOverJpsiInt, intWidthSqrts, systCsRatioPsi2sOverJpsiInt)
-    SetGraSyst(graSystCsRatioPsi2sOverJpsiInt, 20, ROOT.kAzure+2)
+    SetGraSyst(graSystCsRatioPsi2sOverJpsiInt, 20, ROOT.kRed+1)
 
     canvasCsRatioInt = TCanvas("canvasCsRatioInt", "canvasCsRatioInt", 800, 600)
     ROOT.gPad.SetLogy(1)
@@ -158,8 +193,8 @@ def intResults():
     histGridCsRatioInt.Draw()
     graSystCsRatioIntSqrtsRun2.Draw("E2 SAME")
     graStatCsRatioIntSqrtsRun2.Draw("EP SAME")
-    graSystCsRatioInt.Draw("E2 SAME")
-    graStatCsRatioInt.Draw("EP SAME")
+    #graSystCsRatioInt.Draw("E2 SAME")
+    #graStatCsRatioInt.Draw("EP SAME")
     graSystCsRatioPsi2sOverJpsiInt.Draw("E2 SAME")
     graStatCsRatioPsi2sOverJpsiInt.Draw("EP SAME")
     canvasCsRatioInt.SaveAs("{}/cross_section_psi2s_over_jpsi_int.pdf".format(outputDir))
@@ -201,9 +236,21 @@ def ptResults():
         relSystJpsi = (systYieldJpsiPt[i] / yieldJpsiPt[i]) * 100
         relStatPsi2s = (statYieldPsi2sPt[i] / yieldPsi2sPt[i]) * 100
         relSystPsi2s = (systYieldPsi2sPt[i] / yieldPsi2sPt[i]) * 100
-        print("& %3.2f - %3.2f & %1.0f $\pm$ %1.0f (%3.2f?%%) $\pm$ %1.0f (%3.2f?%%) & %1.0f $\pm$ %1.0f (%3.2f?%%) $\pm$ %1.0f (%3.2f?%%) ??" % (ptMin[i], ptMax[i], 
+        relStatRatioPsi2sOverJpsi = (statRatioPsi2sOverJpsiPt[i] / ratioPsi2sOverJpsiPt[i]) * 100
+        relSystRatioPsi2sOverJpsi = (systRatioPsi2sOverJpsiPt[i] / ratioPsi2sOverJpsiPt[i]) * 100
+        print("& %3.2f - %3.2f & %1.0f $\pm$ %1.0f (%3.2f?%%) $\pm$ %1.0f (%3.2f?%%) & %1.0f $\pm$ %1.0f (%3.2f?%%) $\pm$ %1.0f (%3.2f?%%) & %1.0f $\pm$ %1.0f (%3.2f?%%) $\pm$ %1.0f (%3.2f?%%) ??" % (ptMin[i], ptMax[i], 
             yieldJpsiPt[i], statYieldJpsiPt[i], relStatJpsi, systYieldJpsiPt[i], relSystJpsi, 
-            yieldPsi2sPt[i], statYieldPsi2sPt[i], relStatPsi2s, systYieldPsi2sPt[i], relSystPsi2s))
+            yieldPsi2sPt[i], statYieldPsi2sPt[i], relStatPsi2s, systYieldPsi2sPt[i], relSystPsi2s,
+            ratioPsi2sOverJpsiPt[i], statRatioPsi2sOverJpsiPt[i], relStatRatioPsi2sOverJpsi, systRatioPsi2sOverJpsiPt[i], relSystRatioPsi2sOverJpsi))
+
+    for i in range(len(ptMin)):
+        relStatJpsi = (statYieldJpsiPt[i] / yieldJpsiPt[i]) * 100
+        relSystJpsi = (systYieldJpsiPt[i] / yieldJpsiPt[i]) * 100
+        relStatPsi2s = (statYieldPsi2sPt[i] / yieldPsi2sPt[i]) * 100
+        relSystPsi2s = (systYieldPsi2sPt[i] / yieldPsi2sPt[i]) * 100
+        relStatRatioPsi2sOverJpsi = (statRatioPsi2sOverJpsiPt[i] / ratioPsi2sOverJpsiPt[i]) * 100
+        relSystRatioPsi2sOverJpsi = (systRatioPsi2sOverJpsiPt[i] / ratioPsi2sOverJpsiPt[i]) * 100
+        print("& %1.0f - %1.0f & %3.2f?%% & %3.2f?%% & %3.2f?%% ??" % (ptMin[i], ptMax[i], relSystJpsi, relSystPsi2s, relSystRatioPsi2sOverJpsi))
 
     # Run2 comparison
     dfYieldJpsiPt = pd.read_csv('run2_results/sig_Jpsi_vs_pt_run2.txt', sep=' ')
@@ -241,16 +288,36 @@ def ptResults():
     axeRatioPsi2sOverJpsiPt = dfAxeRatioPsi2sOverJpsiPt["val"].to_numpy()
     statAxeRatioPsi2sOverJpsiPt = dfAxeRatioPsi2sOverJpsiPt["stat"].to_numpy()
     systAxeRatioPsi2sOverJpsiPt = dfAxeRatioPsi2sOverJpsiPt["syst"].to_numpy()
-
+        
     for i in range(len(ptMin)):
         relStatJpsi = (statAxeJpsiPt[i] / axeJpsiPt[i]) * 100
         relSystJpsi = (systAxeJpsiPt[i] / axeJpsiPt[i]) * 100
         relStatPsi2s = (statAxePsi2sPt[i] / axePsi2sPt[i]) * 100
         relSystPsi2s = (systAxePsi2sPt[i] / axePsi2sPt[i]) * 100
-        print("& %3.2f - %3.2f & %4.3f $\pm$ %4.3f (%3.2f?%%) & %4.3f $\pm$ %4.3f (%3.2f?%%) ??" % (ptMin[i], ptMax[i], 
-            axeJpsiPt[i], statAxeJpsiPt[i], relStatJpsi, 
-            axePsi2sPt[i], statAxePsi2sPt[i], relStatPsi2s))
+        relStatRatioPsi2sOverJpsi = (statAxeRatioPsi2sOverJpsiPt[i] / axeRatioPsi2sOverJpsiPt[i]) * 100
+        relSystRatioPsi2sOverJpsi = (systAxeRatioPsi2sOverJpsiPt[i] / axeRatioPsi2sOverJpsiPt[i]) * 100
+        #print("& %3.2f - %3.2f & %4.3f $\pm$ %4.3f (%3.2f?%%) $\pm$ %4.3f (%3.2f?%%) & %4.3f $\pm$ %4.3f (%3.2f?%%) $\pm$ %4.3f (%3.2f?%%) & %4.3f $\pm$ %4.3f (%3.2f?%%) $\pm$ %4.3f (%3.2f?%%) ??" % (yMin[i], yMax[i], 
+            #axeJpsiPt[i], statAxeJpsiPt[i], relStatJpsi, systAxeJpsiPt[i], relSystJpsi,
+            #axePsi2sPt[i], statAxePsi2sPt[i], relStatPsi2s, systAxePsi2sPt[i], relSystPsi2s,
+            #axeRatioPsi2sOverJpsiPt[i], statAxeRatioPsi2sOverJpsiPt[i], relStatRatioPsi2sOverJpsi, systAxeRatioPsi2sOverJpsiPt[i], relSystRatioPsi2sOverJpsi))
+        print("& %3.2f - %3.2f & %4.3f $\pm$ %4.3f $\pm$ %4.3f & %4.3f $\pm$ %4.3f $\pm$ %4.3f & %4.3f $\pm$ %4.3f $\pm$ %4.3f ??" % (ptMin[i], ptMax[i], 
+            axeJpsiPt[i], statAxeJpsiPt[i], systAxeJpsiPt[i],
+            axePsi2sPt[i], statAxePsi2sPt[i], systAxePsi2sPt[i],
+            axeRatioPsi2sOverJpsiPt[i], statAxeRatioPsi2sOverJpsiPt[i], systAxeRatioPsi2sOverJpsiPt[i]))
         
+    print("--------- systematics ---------")
+    for i in range(len(ptMin)):
+        relSystYieldJpsi = (systYieldJpsiPt[i] / yieldJpsiPt[i]) * 100
+        relSystYieldPsi2s = (systYieldPsi2sPt[i] / yieldPsi2sPt[i]) * 100
+        relSystYieldRatioPsi2sOverJpsi = (systRatioPsi2sOverJpsiPt[i] / ratioPsi2sOverJpsiPt[i]) * 100
+        relSystAxeJpsi = (systAxeJpsiPt[i] / axeJpsiPt[i]) * 100
+        relSystAxePsi2s = (systAxePsi2sPt[i] / axePsi2sPt[i]) * 100
+        relSystAxeRatioPsi2sOverJpsi = (systAxeRatioPsi2sOverJpsiPt[i] / axeRatioPsi2sOverJpsiPt[i]) * 100
+        print("%3.2f - %3.2f & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% ??" % (ptMin[i], ptMax[i], 
+            relSystYieldJpsi, relSystYieldPsi2s, relSystYieldRatioPsi2sOverJpsi,
+            relSystAxeJpsi, relSystAxePsi2s, relSystAxeRatioPsi2sOverJpsi,
+            systRelAxeRealisticVsIdealPt[i] * 100))
+
     ############################
     # Create and fill histograms
     ############################
@@ -531,7 +598,7 @@ def ptResults():
         value = ratioPsi2sOverJpsiPt[iPt] / axeRatioPsi2sOverJpsiPt[iPt]
         csRatioPsi2sOverJpsiPt[iPt] = (value * (brJpsiToMuMu / brPsi2sToMuMu))
         statCsRatioPsi2sOverJpsiPt[iPt] = ((value * math.sqrt(relStatYield * relStatYield + relStatAxe * relStatAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
-        systCsRatioPsi2sOverJpsiPt[iPt] = ((value * math.sqrt(relSystYield * relSystYield + relSystAxe * relSystAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
+        systCsRatioPsi2sOverJpsiPt[iPt] = ((value * math.sqrt(relSystYield * relSystYield + relSystAxe * relSystAxe + systRelAxeRealisticVsIdealPt[iPt] * systRelAxeRealisticVsIdealPt[iPt])) * (brJpsiToMuMu / brPsi2sToMuMu))
 
 
     # Print all results for analysis    
@@ -552,16 +619,16 @@ def ptResults():
         print("& %3.2f - %3.2f & %4.3f $\pm$ %4.3f (%3.2f?%%) $\pm$ %4.3f (%3.2f?%%) ??" % (ptMin[i], ptMax[i], csRatioPsi2sOverJpsiPt[i], statCsRatioPsi2sOverJpsiPt[i], relStatJpsi, systCsRatioPsi2sOverJpsiPt[i], relSystJpsi))
 
     graStatCsRatioPt = TGraphErrors(len(ptMin), ptCentr, csRatioPt, ptWidth, statCsRatioPt)
-    SetGraStat(graStatCsRatioPt, 20, ROOT.kRed+1)
+    SetGraStat(graStatCsRatioPt, 20, ROOT.kAzure+2)
 
     graSystCsRatioPt = TGraphErrors(len(ptMin), ptCentr, csRatioPt, ptWidth, systCsRatioPt)
-    SetGraSyst(graSystCsRatioPt, 20, ROOT.kRed+1)
+    SetGraSyst(graSystCsRatioPt, 20, ROOT.kAzure+2)
 
     graStatCsRatioPsi2sOverJpsiPt = TGraphErrors(len(ptMin), ptCentr, csRatioPsi2sOverJpsiPt, ptWidth, statCsRatioPsi2sOverJpsiPt)
-    SetGraStat(graStatCsRatioPsi2sOverJpsiPt, 20, ROOT.kAzure+2)
+    SetGraStat(graStatCsRatioPsi2sOverJpsiPt, 20, ROOT.kRed+1)
 
     graSystCsRatioPsi2sOverJpsiPt = TGraphErrors(len(ptMin), ptCentr, csRatioPsi2sOverJpsiPt, ptWidth, systCsRatioPsi2sOverJpsiPt)
-    SetGraSyst(graSystCsRatioPsi2sOverJpsiPt, 20, ROOT.kAzure+2)
+    SetGraSyst(graSystCsRatioPsi2sOverJpsiPt, 20, ROOT.kRed+1)
 
     graStatCsRatioPtRun2 = TGraphErrors(len(ptMinRun2), ptCentrRun2, csRatioPtRun2, ptWidthRun2, statCsRatioPtRun2)
     SetGraStat(graStatCsRatioPtRun2, 20, ROOT.kBlack)
@@ -589,6 +656,25 @@ def ptResults():
     graStatCsRatioPsi2sOverJpsiPt.Draw("EP SAME")
     legendCsRatioPt.Draw("EP SAME")
     canvasCsRatioPt.SaveAs("{}/cross_section_psi2s_over_jpsi_vs_pt.pdf".format(outputDir))
+
+
+    legendCsRatioFinalPt = TLegend(0.69, 0.49, 0.89, 0.69, " ", "brNDC")
+    SetLegend(legendCsRatioFinalPt)
+    legendCsRatioFinalPt.AddEntry(graSystCsRatioPsi2sOverJpsiPt, "Run3", "FP")
+    legendCsRatioFinalPt.AddEntry(graSystRatioPtRun2, "Run2", "FP")
+
+    canvasCsRatioFinalPt = TCanvas("canvasCsRatioFinalPt", "canvasCsRatioFinalPt", 800, 600)
+    ROOT.gPad.SetLogy(1)
+    histGridCsRatioPt  = TH2F("histGridCsRatioPt", "", 100, 0, 20, 100, 0.001, 1)
+    histGridCsRatioPt.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c}")
+    histGridCsRatioPt.GetYaxis().SetTitle("d^{2}#sigma_{#psi(2S)}/d#it{p}_{T}d#it{y} / d^{2}#sigma_{J/#psi}/d#it{p}_{T}d#it{y}")
+    histGridCsRatioPt.Draw()
+    graSystCsRatioPtRun2.Draw("E2 SAME")
+    graStatCsRatioPtRun2.Draw("EP SAME")
+    graSystCsRatioPsi2sOverJpsiPt.Draw("E2 SAME")
+    graStatCsRatioPsi2sOverJpsiPt.Draw("EP SAME")
+    legendCsRatioFinalPt.Draw("EP SAME")
+    canvasCsRatioFinalPt.SaveAs("{}/cross_section_psi2s_over_jpsi_vs_pt_final.pdf".format(outputDir))
 
 ################
 ################
@@ -628,9 +714,21 @@ def yResults():
         relSystJpsi = (systYieldJpsiY[i] / yieldJpsiY[i]) * 100
         relStatPsi2s = (statYieldPsi2sY[i] / yieldPsi2sY[i]) * 100
         relSystPsi2s = (systYieldPsi2sY[i] / yieldPsi2sY[i]) * 100
-        print("& %3.2f - %3.2f & %1.0f $\pm$ %1.0f (%3.2f?%%) $\pm$ %1.0f (%3.2f?%%) & %1.0f $\pm$ %1.0f (%3.2f?%%) $\pm$ %1.0f (%3.2f?%%) ??" % (yMin[i], yMax[i], 
+        relStatRatioPsi2sOverJpsi = (statRatioPsi2sOverJpsiY[i] / ratioPsi2sOverJpsiY[i]) * 100
+        relSystRatioPsi2sOverJpsi = (systRatioPsi2sOverJpsiY[i] / ratioPsi2sOverJpsiY[i]) * 100
+        print("& %3.2f - %3.2f & %1.0f $\pm$ %1.0f (%3.2f?%%) $\pm$ %1.0f (%3.2f?%%) & %1.0f $\pm$ %1.0f (%3.2f?%%) $\pm$ %1.0f (%3.2f?%%) & %1.0f $\pm$ %1.0f (%3.2f?%%) $\pm$ %1.0f (%3.2f?%%) ??" % (yMin[i], yMax[i], 
             yieldJpsiY[i], statYieldJpsiY[i], relStatJpsi, systYieldJpsiY[i], relSystJpsi, 
-            yieldPsi2sY[i], statYieldPsi2sY[i], relStatPsi2s, systYieldPsi2sY[i], relSystPsi2s))
+            yieldPsi2sY[i], statYieldPsi2sY[i], relStatPsi2s, systYieldPsi2sY[i], relSystPsi2s,
+            ratioPsi2sOverJpsiY[i], statRatioPsi2sOverJpsiY[i], relStatRatioPsi2sOverJpsi, systRatioPsi2sOverJpsiY[i], relSystRatioPsi2sOverJpsi))
+        
+    for i in range(len(yMin)):
+        relStatJpsi = (statYieldJpsiY[i] / yieldJpsiY[i]) * 100
+        relSystJpsi = (systYieldJpsiY[i] / yieldJpsiY[i]) * 100
+        relStatPsi2s = (statYieldPsi2sY[i] / yieldPsi2sY[i]) * 100
+        relSystPsi2s = (systYieldPsi2sY[i] / yieldPsi2sY[i]) * 100
+        relStatRatioPsi2sOverJpsi = (statRatioPsi2sOverJpsiY[i] / ratioPsi2sOverJpsiY[i]) * 100
+        relSystRatioPsi2sOverJpsi = (systRatioPsi2sOverJpsiY[i] / ratioPsi2sOverJpsiY[i]) * 100
+        print("& %3.2f - %3.2f & %3.2f?%% & %3.2f?%% & %3.2f?%% ??" % (yMin[i], yMax[i], relSystJpsi, relSystPsi2s, relSystRatioPsi2sOverJpsi))
 
     dfYieldJpsiY = pd.read_csv('run2_results/sig_Jpsi_vs_y_run2.txt', sep=' ')
     yMinRun2 = dfYieldJpsiY["x_min"].to_numpy()
@@ -673,9 +771,29 @@ def yResults():
         relSystJpsi = (systAxeJpsiY[i] / axeJpsiY[i]) * 100
         relStatPsi2s = (statAxePsi2sY[i] / axePsi2sY[i]) * 100
         relSystPsi2s = (systAxePsi2sY[i] / axePsi2sY[i]) * 100
-        print("& %3.2f - %3.2f & %4.3f $\pm$ %4.3f (%3.2f?%%) & %4.3f $\pm$ %4.3f (%3.2f?%%) ??" % (yMin[i], yMax[i], 
-            axeJpsiY[i], statAxeJpsiY[i], relStatJpsi,
-            axePsi2sY[i], statAxePsi2sY[i], relStatPsi2s))
+        relStatRatioPsi2sOverJpsi = (statAxeRatioPsi2sOverJpsiY[i] / axeRatioPsi2sOverJpsiY[i]) * 100
+        relSystRatioPsi2sOverJpsi = (systAxeRatioPsi2sOverJpsiY[i] / axeRatioPsi2sOverJpsiY[i]) * 100
+        #print("& %3.2f - %3.2f & %4.3f $\pm$ %4.3f (%3.2f?%%) $\pm$ %4.3f (%3.2f?%%) & %4.3f $\pm$ %4.3f (%3.2f?%%) $\pm$ %4.3f (%3.2f?%%) & %4.3f $\pm$ %4.3f (%3.2f?%%) $\pm$ %4.3f (%3.2f?%%) ??" % (yMin[i], yMax[i], 
+            #axeJpsiY[i], statAxeJpsiY[i], relStatJpsi, systAxeJpsiY[i], relSystJpsi,
+            #axePsi2sY[i], statAxePsi2sY[i], relStatPsi2s, systAxePsi2sY[i], relSystPsi2s,
+            #axeRatioPsi2sOverJpsiY[i], statAxeRatioPsi2sOverJpsiY[i], relStatRatioPsi2sOverJpsi, systAxeRatioPsi2sOverJpsiY[i], relSystRatioPsi2sOverJpsi))
+        print("& %3.2f - %3.2f & %4.3f $\pm$ %4.3f $\pm$ %4.3f & %4.3f $\pm$ %4.3f $\pm$ %4.3f & %4.3f $\pm$ %4.3f $\pm$ %4.3f ??" % (yMin[i], yMax[i], 
+            axeJpsiY[i], statAxeJpsiY[i], systAxeJpsiY[i],
+            axePsi2sY[i], statAxePsi2sY[i], systAxePsi2sY[i],
+            axeRatioPsi2sOverJpsiY[i], statAxeRatioPsi2sOverJpsiY[i], systAxeRatioPsi2sOverJpsiY[i]))
+        
+    print("--------- systematics ---------")
+    for i in range(len(yMin)):
+        relSystYieldJpsi = (systYieldJpsiY[i] / yieldJpsiY[i]) * 100
+        relSystYieldPsi2s = (systYieldPsi2sY[i] / yieldPsi2sY[i]) * 100
+        relSystYieldRatioPsi2sOverJpsi = (systRatioPsi2sOverJpsiY[i] / ratioPsi2sOverJpsiY[i]) * 100
+        relSystAxeJpsi = (systAxeJpsiY[i] / axeJpsiY[i]) * 100
+        relSystAxePsi2s = (systAxePsi2sY[i] / axePsi2sY[i]) * 100
+        relSystAxeRatioPsi2sOverJpsi = (systAxeRatioPsi2sOverJpsiY[i] / axeRatioPsi2sOverJpsiY[i]) * 100
+        print("%3.2f - %3.2f & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% & %3.2f?%% ??" % (yMin[i], yMax[i], 
+            relSystYieldJpsi, relSystYieldPsi2s, relSystYieldRatioPsi2sOverJpsi,
+            relSystAxeJpsi, relSystAxePsi2s, relSystAxeRatioPsi2sOverJpsi,
+            systRelAxeRealisticVsIdealY[i] * 100))
 
     ############################
     # Create and fill histograms
@@ -869,8 +987,8 @@ def yResults():
     ######################################
     legendAxeY = TLegend(0.29, 0.19, 0.49, 0.49, " ", "brNDC")
     SetLegend(legendAxeY)
-    legendAxeY.AddEntry(histAxeJpsiY, "J/#psi (Run2 MC)", "L")
-    legendAxeY.AddEntry(histAxePsi2sY, "#psi(2S) (Run2 MC)", "L")
+    legendAxeY.AddEntry(histAxeJpsiY, "J/#psi", "L")
+    legendAxeY.AddEntry(histAxePsi2sY, "#psi(2S)", "L")
 
     canvasAxeY = TCanvas("canvasAxeY", "canvasAxeY", 800, 600)
     ROOT.gPad.SetLogy(1)
@@ -945,7 +1063,7 @@ def yResults():
         value = ratioPsi2sOverJpsiY[iY] / axeRatioPsi2sOverJpsiY[iY]
         csRatioPsi2sOverJpsiY[iY] = (value * (brJpsiToMuMu / brPsi2sToMuMu))
         statCsRatioPsi2sOverJpsiY[iY] = ((value * math.sqrt(relStatYield * relStatYield + relStatAxe * relStatAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
-        systCsRatioPsi2sOverJpsiY[iY] = ((value * math.sqrt(relSystYield * relSystYield + relSystAxe * relSystAxe)) * (brJpsiToMuMu / brPsi2sToMuMu))
+        systCsRatioPsi2sOverJpsiY[iY] = ((value * math.sqrt(relSystYield * relSystYield + relSystAxe * relSystAxe + systRelAxeRealisticVsIdealY[iY] * systRelAxeRealisticVsIdealY[iY])) * (brJpsiToMuMu / brPsi2sToMuMu))
 
     # Print all results for analysis    
     print("Ratio of the mean")
@@ -965,16 +1083,16 @@ def yResults():
         print("& %3.2f - %3.2f & %4.3f $\pm$ %4.3f (%3.2f?%%) $\pm$ %4.3f (%3.2f?%%) ??" % (yMin[i], yMax[i], csRatioPsi2sOverJpsiY[i], statCsRatioPsi2sOverJpsiY[i], relStatJpsi, systCsRatioPsi2sOverJpsiY[i], relSystJpsi))
 
     graStatCsRatioY = TGraphErrors(len(yMin), yCentr, csRatioY, yWidth, statCsRatioY)
-    SetGraStat(graStatCsRatioY, 20, ROOT.kRed+1)
+    SetGraStat(graStatCsRatioY, 20, ROOT.kAzure+2)
 
     graSystCsRatioY = TGraphErrors(len(yMin), yCentr, csRatioY, yWidth, systCsRatioY)
-    SetGraSyst(graSystCsRatioY, 20, ROOT.kRed+1)
+    SetGraSyst(graSystCsRatioY, 20, ROOT.kAzure+2)
 
     graStatCsRatioPsi2sOverJpsiY = TGraphErrors(len(yMin), yCentr, csRatioPsi2sOverJpsiY, yWidth, statCsRatioPsi2sOverJpsiY)
-    SetGraStat(graStatCsRatioPsi2sOverJpsiY, 20, ROOT.kAzure+2)
+    SetGraStat(graStatCsRatioPsi2sOverJpsiY, 20, ROOT.kRed+1)
 
     graSystCsRatioPsi2sOverJpsiY = TGraphErrors(len(yMin), yCentr, csRatioPsi2sOverJpsiY, yWidth, systCsRatioPsi2sOverJpsiY)
-    SetGraSyst(graSystCsRatioPsi2sOverJpsiY, 20, ROOT.kAzure+2)
+    SetGraSyst(graSystCsRatioPsi2sOverJpsiY, 20, ROOT.kRed+1)
 
     graStatCsRatioYRun2 = TGraphErrors(len(yMinRun2), yCentrRun2, csRatioYRun2, yWidthRun2, statCsRatioYRun2)
     SetGraStat(graStatCsRatioYRun2, 20, ROOT.kBlack)
@@ -1002,6 +1120,24 @@ def yResults():
     graStatCsRatioPsi2sOverJpsiY.Draw("EP SAME")
     legendCsRatioY.Draw("EP SAME")
     canvasCsRatioY.SaveAs("{}/cross_section_psi2s_over_jpsi_vs_y.pdf".format(outputDir))
+
+    legendCsRatioFinalY = TLegend(0.69, 0.49, 0.89, 0.69, " ", "brNDC")
+    SetLegend(legendCsRatioFinalY)
+    legendCsRatioFinalY.AddEntry(graSystCsRatioPsi2sOverJpsiY, "Run3", "FP")
+    legendCsRatioFinalY.AddEntry(graSystRatioYRun2, "Run2", "FP")
+
+    canvasCsRatioFinalY = TCanvas("canvasCsRatioFinalY", "canvasCsRatioFinalY", 800, 600)
+    ROOT.gPad.SetLogy(1)
+    histGridCsRatioY  = TH2F("histGridCsRatioY", "", 100, 2.5, 4, 100, 0, 0.35)
+    histGridCsRatioY.GetXaxis().SetTitle("#it{y}")
+    histGridCsRatioY.GetYaxis().SetTitle("d#sigma_{#psi(2S)}/d#it{y} / d#sigma_{J/#psi}/d#it{y}")
+    histGridCsRatioY.Draw()
+    graSystCsRatioYRun2.Draw("E2 SAME")
+    graStatCsRatioYRun2.Draw("EP SAME")
+    graSystCsRatioPsi2sOverJpsiY.Draw("E2 SAME")
+    graStatCsRatioPsi2sOverJpsiY.Draw("EP SAME")
+    legendCsRatioFinalY.Draw("EP SAME")
+    canvasCsRatioFinalY.SaveAs("{}/cross_section_psi2s_over_jpsi_vs_y_final.pdf".format(outputDir))
 
 
 def main():
