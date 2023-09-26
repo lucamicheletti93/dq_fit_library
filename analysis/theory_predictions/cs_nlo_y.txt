@@ -1,2 +1,0 @@
-x_min x_max val val_min val_max 
-2.5 4.0 0.5756 0.0002 0.0001

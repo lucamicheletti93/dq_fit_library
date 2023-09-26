@@ -20,8 +20,8 @@ ClassImp(NA60Pdf);
                         RooAbsReal& _x,
                         RooAbsReal& _xmean,
                         RooAbsReal& _sigma,
-	                    RooAbsReal& _alphaleft,
-	                    RooAbsReal& _p1left,
+	                      RooAbsReal& _alphaleft,
+	                      RooAbsReal& _p1left,
                         RooAbsReal& _p2left,
                         RooAbsReal& _p3left,
                         RooAbsReal& _alpharight,
@@ -69,22 +69,21 @@ ClassImp(NA60Pdf);
 
     Double_t t0;
     
-    if (t > alpharight){
+    if (t >= alpharight){
         double exp = (p2right-p3right * pow(t-alpharight,0.5));
         t0 = 1 + p1right *pow(t-alpharight, exp);
-        return TMath::Exp(-0.5 * pow(t / t0,2) );
+        return TMath::Exp(-0.5 * pow(t/t0,2) );
     }
     
-    if (t < alphaleft){
+    if (t <= alphaleft){
         double exp = (p2left-p3left * pow(alphaleft-t,0.5));
         t0 = 1 + p1left *pow(alphaleft-t, exp);
         return TMath::Exp(-0.5 * pow((t/t0),2) );
     }
     
-   if (alphaleft < t  and t < alpharight){
-
+   if (alphaleft < t && t < alpharight){
         t0 = 1;
-         return TMath::Exp(-0.5 * pow((t /t0),2) );
+        return TMath::Exp(-0.5 * pow((t/t0),2) );
     }
     
     return 0.;

@@ -86,7 +86,7 @@ def main():
             
             ptCentr = []
             valCentr = []
-
+            
     centralCols = ['central1', 'central2', 'central3', 'central4', 'central5', 'central6']
     doubleRenormCols = ['double_renorm1', 'double_renorm2', 'double_renorm3', 'double_renorm4', 'double_renorm5', 'double_renorm6']
     halfRenormCols = ['half_renorm1', 'half_renorm2', 'half_renorm3', 'half_renorm4', 'half_renorm5', 'half_renorm6']
@@ -120,75 +120,82 @@ def main():
     #######################################
     # Pt dependence
     #######################################
+    dfCsJpsiIcemPt['ptWeights'] = [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 0.5, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.25]
+    dfCsPsi2sIcemPt['ptWeights'] = [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 0.5, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.25]
     dfCsJpsiIcemPt['centralSum'] = dfCsJpsiIcemPt[centralCols].sum(axis=1)
     dfCsPsi2sIcemPt['centralSum'] = dfCsPsi2sIcemPt[centralCols].sum(axis=1)
-    dfMergedCsJpsi = dfCsJpsiIcemPt.groupby('ptGroup').agg({'centralSum': 'sum'}).reset_index()
-    dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'centralSum': 'sum'}).reset_index()
-    csCentralJpsiIcemPt = (dfMergedCsJpsi['centralSum'].to_numpy()) * 1e-3
-    csCentralPsi2sIcemPt = (dfMergedCsPsi2s['centralSum'].to_numpy()) * 1e-3
-    csCentralPsi2sOverJpsiIcemPt = csCentralPsi2sIcemPt / csCentralJpsiIcemPt
-    print(ToCArray(csCentralJpsiIcemPt, ctype='double', name='Ramona_136TeV_Central_jpsi', formatter=lambda x: '{:0.5f}'.format(x)))
-    print(ToCArray(csCentralPsi2sIcemPt, ctype='double', name='Ramona_136TeV_Central_psi2S', formatter=lambda x: '{:0.5f}'.format(x)))
+
+    #dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'centralSumPtWeight': 'sum'}).reset_index()
+    #csCentralJpsiIcemPt = (dfMergedCsJpsi['centralSumPtWeight'].to_numpy()) * 1e-3
+    #csCentralPsi2sIcemPt = (dfMergedCsPsi2s['centralSumPtWeight'].to_numpy()) * 1e-3
+    #csCentralPsi2sOverJpsiIcemPt = csCentralPsi2sIcemPt / csCentralJpsiIcemPt
+    #print(ToCArray(csCentralJpsiIcemPt, ctype='double', name='Ramona_136TeV_Central_jpsi', formatter=lambda x: '{:0.5f}'.format(x)))
+    #print(ToCArray(csCentralPsi2sIcemPt, ctype='double', name='Ramona_136TeV_Central_psi2S', formatter=lambda x: '{:0.5f}'.format(x)))
     
     # double renorm
     dfCsJpsiIcemPt['doubleRenormSum'] = dfCsJpsiIcemPt[doubleRenormCols].sum(axis=1)
     dfCsPsi2sIcemPt['doubleRenormSum'] = dfCsPsi2sIcemPt[doubleRenormCols].sum(axis=1)
-    dfMergedCsJpsi = dfCsJpsiIcemPt.groupby('ptGroup').agg({'doubleRenormSum': 'sum'}).reset_index()
-    dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'doubleRenormSum': 'sum'}).reset_index()
-    csDoubleRenormJpsiIcemPt = (dfMergedCsJpsi['doubleRenormSum'].to_numpy()) * 1e-3
-    csDoubleRenormPsi2sIcemPt = (dfMergedCsPsi2s['doubleRenormSum'].to_numpy()) * 1e-3
-    csDoubleRenormPsi2sOverJpsiIcemPt = csDoubleRenormPsi2sIcemPt / csDoubleRenormJpsiIcemPt
-    print(ToCArray(csDoubleRenormJpsiIcemPt, ctype='double', name='Ramona_136TeV_Scale_High_jpsi', formatter=lambda x: '{:0.5f}'.format(x)))
-    print(ToCArray(csDoubleRenormPsi2sIcemPt, ctype='double', name='Ramona_136TeV_Scale_High_psi2S', formatter=lambda x: '{:0.5f}'.format(x)))
+    #dfMergedCsJpsi = dfCsJpsiIcemPt.groupby('ptGroup').agg({'doubleRenormSum': 'sum'}).reset_index()
+    #dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'doubleRenormSum': 'sum'}).reset_index()
+    #csDoubleRenormJpsiIcemPt = (dfMergedCsJpsi['doubleRenormSum'].to_numpy()) * 1e-3
+    #csDoubleRenormPsi2sIcemPt = (dfMergedCsPsi2s['doubleRenormSum'].to_numpy()) * 1e-3
+    #csDoubleRenormPsi2sOverJpsiIcemPt = csDoubleRenormPsi2sIcemPt / csDoubleRenormJpsiIcemPt
+    #print(ToCArray(csDoubleRenormJpsiIcemPt, ctype='double', name='Ramona_136TeV_Scale_High_jpsi', formatter=lambda x: '{:0.5f}'.format(x)))
+    #print(ToCArray(csDoubleRenormPsi2sIcemPt, ctype='double', name='Ramona_136TeV_Scale_High_psi2S', formatter=lambda x: '{:0.5f}'.format(x)))
 
-    deltaCsDoubleRenormJpsiIcemPt = np.abs(csDoubleRenormJpsiIcemPt - csCentralJpsiIcemPt)
-    deltaCsDoubleRenormPsi2sIcemPt = np.abs(csDoubleRenormPsi2sIcemPt - csCentralPsi2sIcemPt)
-    relErrCsDoubleRenormPsi2sOverJpsiIcemPt = (deltaCsDoubleRenormJpsiIcemPt / csCentralJpsiIcemPt) - (deltaCsDoubleRenormPsi2sIcemPt / csCentralPsi2sIcemPt)
+    #deltaCsDoubleRenormJpsiIcemPt = np.abs(csDoubleRenormJpsiIcemPt - csCentralJpsiIcemPt)
+    #deltaCsDoubleRenormPsi2sIcemPt = np.abs(csDoubleRenormPsi2sIcemPt - csCentralPsi2sIcemPt)
+    #relErrCsDoubleRenormPsi2sOverJpsiIcemPt = (deltaCsDoubleRenormJpsiIcemPt / csCentralJpsiIcemPt) - (deltaCsDoubleRenormPsi2sIcemPt / csCentralPsi2sIcemPt)
     
     # half renorm
     dfCsJpsiIcemPt['halfRenormSum'] = dfCsJpsiIcemPt[halfRenormCols].sum(axis=1)
     dfCsPsi2sIcemPt['halfRenormSum'] = dfCsPsi2sIcemPt[halfRenormCols].sum(axis=1)
-    dfMergedCsJpsi = dfCsJpsiIcemPt.groupby('ptGroup').agg({'halfRenormSum': 'sum'}).reset_index()
-    dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'halfRenormSum': 'sum'}).reset_index()
-    csHalfRenormJpsiIcemPt = (dfMergedCsJpsi['halfRenormSum'].to_numpy()) * 1e-3
-    csHalfRenormPsi2sIcemPt = (dfMergedCsPsi2s['halfRenormSum'].to_numpy()) * 1e-3
-    csHalfRenormPsi2sOverJpsiIcemPt = csHalfRenormPsi2sIcemPt / csHalfRenormJpsiIcemPt
-    print(ToCArray(csHalfRenormJpsiIcemPt, ctype='double', name='Ramona_136TeV_Scale_Low_jpsi', formatter=lambda x: '{:0.5f}'.format(x)))
-    print(ToCArray(csHalfRenormPsi2sIcemPt, ctype='double', name='Ramona_136TeV_Scale_Low_psi2S', formatter=lambda x: '{:0.5f}'.format(x)))
+    #dfMergedCsJpsi = dfCsJpsiIcemPt.groupby('ptGroup').agg({'halfRenormSum': 'sum'}).reset_index()
+    #dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'halfRenormSum': 'sum'}).reset_index()
+    #csHalfRenormJpsiIcemPt = (dfMergedCsJpsi['halfRenormSum'].to_numpy()) * 1e-3
+    #csHalfRenormPsi2sIcemPt = (dfMergedCsPsi2s['halfRenormSum'].to_numpy()) * 1e-3
+    #csHalfRenormPsi2sOverJpsiIcemPt = csHalfRenormPsi2sIcemPt / csHalfRenormJpsiIcemPt
+    #print(ToCArray(csHalfRenormJpsiIcemPt, ctype='double', name='Ramona_136TeV_Scale_Low_jpsi', formatter=lambda x: '{:0.5f}'.format(x)))
+    #print(ToCArray(csHalfRenormPsi2sIcemPt, ctype='double', name='Ramona_136TeV_Scale_Low_psi2S', formatter=lambda x: '{:0.5f}'.format(x)))
 
-    deltaCsHalfRenormJpsiIcemPt = np.abs(csHalfRenormJpsiIcemPt - csCentralJpsiIcemPt)
-    deltaCsHalfRenormPsi2sIcemPt = np.abs(csHalfRenormPsi2sIcemPt - csCentralPsi2sIcemPt)
-    relErrCsHalfRenormPsi2sOverJpsiIcemPt = (deltaCsHalfRenormJpsiIcemPt / csCentralJpsiIcemPt) - (deltaCsHalfRenormPsi2sIcemPt / csCentralPsi2sIcemPt)
+    #deltaCsHalfRenormJpsiIcemPt = np.abs(csHalfRenormJpsiIcemPt - csCentralJpsiIcemPt)
+    #deltaCsHalfRenormPsi2sIcemPt = np.abs(csHalfRenormPsi2sIcemPt - csCentralPsi2sIcemPt)
+    #relErrCsHalfRenormPsi2sOverJpsiIcemPt = (deltaCsHalfRenormJpsiIcemPt / csCentralJpsiIcemPt) - (deltaCsHalfRenormPsi2sIcemPt / csCentralPsi2sIcemPt)
 
     # high mass
     dfCsJpsiIcemPt['highMassSum'] = dfCsJpsiIcemPt[highMassCols].sum(axis=1)
     dfCsPsi2sIcemPt['highMassSum'] = dfCsPsi2sIcemPt[highMassCols].sum(axis=1)
-    dfMergedCsJpsi = dfCsJpsiIcemPt.groupby('ptGroup').agg({'highMassSum': 'sum'}).reset_index()
-    dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'highMassSum': 'sum'}).reset_index()
-    csHighMassJpsiIcemPt = (dfMergedCsJpsi['highMassSum'].to_numpy()) * 1e-3
-    csHighMassPsi2sIcemPt = (dfMergedCsPsi2s['highMassSum'].to_numpy()) * 1e-3
-    csHighMassPsi2sOverJpsiIcemPt = csHighMassPsi2sIcemPt / csHighMassJpsiIcemPt
-    print(ToCArray(csHighMassJpsiIcemPt, ctype='double', name='Ramona_136TeV_Mass_High_jpsi', formatter=lambda x: '{:0.5f}'.format(x)))
-    print(ToCArray(csHighMassPsi2sIcemPt, ctype='double', name='Ramona_136TeV_Mass_High_psi2S', formatter=lambda x: '{:0.5f}'.format(x)))
+    #dfMergedCsJpsi = dfCsJpsiIcemPt.groupby('ptGroup').agg({'highMassSum': 'sum'}).reset_index()
+    #dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'highMassSum': 'sum'}).reset_index()
+    #csHighMassJpsiIcemPt = (dfMergedCsJpsi['highMassSum'].to_numpy()) * 1e-3
+    #csHighMassPsi2sIcemPt = (dfMergedCsPsi2s['highMassSum'].to_numpy()) * 1e-3
+    #csHighMassPsi2sOverJpsiIcemPt = csHighMassPsi2sIcemPt / csHighMassJpsiIcemPt
+    #print(ToCArray(csHighMassJpsiIcemPt, ctype='double', name='Ramona_136TeV_Mass_High_jpsi', formatter=lambda x: '{:0.5f}'.format(x)))
+    #print(ToCArray(csHighMassPsi2sIcemPt, ctype='double', name='Ramona_136TeV_Mass_High_psi2S', formatter=lambda x: '{:0.5f}'.format(x)))
 
-    deltaCsHighMassJpsiIcemPt = np.abs(csHighMassJpsiIcemPt - csCentralJpsiIcemPt)
-    deltaCsHighMassPsi2sIcemPt = np.abs(csHighMassPsi2sIcemPt - csCentralPsi2sIcemPt)
-    relErrCsHighMassPsi2sOverJpsiIcemPt = (deltaCsHighMassJpsiIcemPt / csCentralJpsiIcemPt) - (deltaCsHighMassPsi2sIcemPt / csCentralPsi2sIcemPt)
+    #deltaCsHighMassJpsiIcemPt = np.abs(csHighMassJpsiIcemPt - csCentralJpsiIcemPt)
+    #deltaCsHighMassPsi2sIcemPt = np.abs(csHighMassPsi2sIcemPt - csCentralPsi2sIcemPt)
+    #relErrCsHighMassPsi2sOverJpsiIcemPt = (deltaCsHighMassJpsiIcemPt / csCentralJpsiIcemPt) - (deltaCsHighMassPsi2sIcemPt / csCentralPsi2sIcemPt)
 
     # low mass
     dfCsJpsiIcemPt['lowMassSum'] = dfCsJpsiIcemPt[lowMassCols].sum(axis=1)
     dfCsPsi2sIcemPt['lowMassSum'] = dfCsPsi2sIcemPt[lowMassCols].sum(axis=1)
-    dfMergedCsJpsi = dfCsJpsiIcemPt.groupby('ptGroup').agg({'lowMassSum': 'sum'}).reset_index()
-    dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'lowMassSum': 'sum'}).reset_index()
-    csLowMassJpsiIcemPt = (dfMergedCsJpsi['lowMassSum'].to_numpy()) * 1e-3
-    csLowMassPsi2sIcemPt = (dfMergedCsPsi2s['lowMassSum'].to_numpy()) * 1e-3
-    csLowMassPsi2sOverJpsiIcemPt = csLowMassPsi2sIcemPt / csLowMassJpsiIcemPt
-    print(ToCArray(csLowMassJpsiIcemPt, ctype='double', name='Ramona_136TeV_Mass_Low_jpsi', formatter=lambda x: '{:0.5f}'.format(x)))
-    print(ToCArray(csLowMassPsi2sIcemPt, ctype='double', name='Ramona_136TeV_Mass_Low_psi2S', formatter=lambda x: '{:0.5f}'.format(x)))
+    #dfMergedCsJpsi = dfCsJpsiIcemPt.groupby('ptGroup').agg({'lowMassSum': 'sum'}).reset_index()
+    #dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'lowMassSum': 'sum'}).reset_index()
+    #csLowMassJpsiIcemPt = (dfMergedCsJpsi['lowMassSum'].to_numpy()) * 1e-3
+    #csLowMassPsi2sIcemPt = (dfMergedCsPsi2s['lowMassSum'].to_numpy()) * 1e-3
+    #csLowMassPsi2sOverJpsiIcemPt = csLowMassPsi2sIcemPt / csLowMassJpsiIcemPt
+    #print(ToCArray(csLowMassJpsiIcemPt, ctype='double', name='Ramona_136TeV_Mass_Low_jpsi', formatter=lambda x: '{:0.5f}'.format(x)))
+    #print(ToCArray(csLowMassPsi2sIcemPt, ctype='double', name='Ramona_136TeV_Mass_Low_psi2S', formatter=lambda x: '{:0.5f}'.format(x)))
 
-    deltaCsLowMassJpsiIcemPt = np.abs(csLowMassJpsiIcemPt - csCentralJpsiIcemPt)
-    deltaCsLowMassPsi2sIcemPt = np.abs(csLowMassPsi2sIcemPt - csCentralPsi2sIcemPt)
-    relErrCsLowMassPsi2sOverJpsiIcemPt = (deltaCsLowMassJpsiIcemPt / csCentralJpsiIcemPt) - (deltaCsLowMassPsi2sIcemPt / csCentralPsi2sIcemPt)
+    #deltaCsLowMassJpsiIcemPt = np.abs(csLowMassJpsiIcemPt - csCentralJpsiIcemPt)
+    #deltaCsLowMassPsi2sIcemPt = np.abs(csLowMassPsi2sIcemPt - csCentralPsi2sIcemPt)
+    #relErrCsLowMassPsi2sOverJpsiIcemPt = (deltaCsLowMassJpsiIcemPt / csCentralJpsiIcemPt) - (deltaCsLowMassPsi2sIcemPt / csCentralPsi2sIcemPt)
+
+    dfCsJpsiIcemPt.to_csv('jpsi_icem_aggregated.csv', index=False)
+    dfCsPsi2sIcemPt.to_csv('psi2s_icem_aggregated.csv', index=False)
+
+    exit()
 
 
     # J/psi

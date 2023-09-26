@@ -9,6 +9,7 @@ import math
 import re
 import uncertainties
 from uncertainties import unumpy
+from statistics import mean
 import argparse
 import ROOT
 from os import path
@@ -89,28 +90,35 @@ def DoSystematics(path, varBin, parName, fOut):
     funcParVal.SetLineColor(kRed)
     funcParVal.SetLineWidth(2)
 
+    #centralVal = funcParVal.GetParameter(0)
+    #statError = funcParVal.GetParError(0)
+    centralVal = mean(parValArray)
+    #statError = np.std(parValArray, ddof=1) / np.sqrt(np.size(parValArray))
+    statError = mean(parErrArray)
+    systError = ComputeRMS(parValArray)
+
     trialIndexWidthArray = array( 'f', [] )
     parValSystArray = array( 'f', [] )
     parErrSystArray = array( 'f', [] )
     for i in range(0, len(parValArray)):
         trialIndexWidthArray.append(0.5)
-        parValSystArray.append(funcParVal.GetParameter(0))
+        parValSystArray.append(centralVal)
         parErrSystArray.append(ComputeRMS(parValArray))
 
     graParSyst = TGraphErrors(len(parValArray), trialIndexArray, parValSystArray, trialIndexWidthArray, parErrSystArray)
     graParSyst.SetFillColorAlpha(kGray+1, 0.3)
 
-    lineParStatUp = TLine(0, funcParVal.GetParameter(0) + funcParVal.GetParError(0), len(trialIndexArray), funcParVal.GetParameter(0) + funcParVal.GetParError(0))
+    linePar = TLine(0, centralVal, len(trialIndexArray), centralVal)
+    linePar.SetLineColor(kRed)
+    linePar.SetLineWidth(2)
+
+    lineParStatUp = TLine(0, centralVal + statError, len(trialIndexArray), centralVal + statError)
     lineParStatUp.SetLineStyle(kDashed)
     lineParStatUp.SetLineColor(kGray+1)
 
-    lineParStatDown = TLine(0, funcParVal.GetParameter(0) - funcParVal.GetParError(0), len(trialIndexArray), funcParVal.GetParameter(0) - funcParVal.GetParError(0))
+    lineParStatDown = TLine(0, centralVal - statError, len(trialIndexArray), centralVal - statError)
     lineParStatDown.SetLineStyle(kDashed)
     lineParStatDown.SetLineColor(kGray+1)
-
-    centralVal = funcParVal.GetParameter(0)
-    statError = funcParVal.GetParError(0)
-    systError = ComputeRMS(parValArray)
 
     latexTitle = TLatex()
     SetLatex(latexTitle)
@@ -123,7 +131,7 @@ def DoSystematics(path, varBin, parName, fOut):
         histGrid.GetXaxis().SetBinLabel(indexLabel, nameTrial)
         indexLabel += 1
     histGrid.Draw("same")
-    funcParVal.Draw("same")
+    linePar.Draw("same")
     lineParStatUp.Draw("same")
     lineParStatDown.Draw("same")
     graParSyst.Draw("E2same")
@@ -137,8 +145,9 @@ def DoSystematics(path, varBin, parName, fOut):
     latexTitle.DrawLatex(0.25, 0.85, "%s = #bf{%3.2f} #pm #bf{%3.2f} (%3.2f %%) #pm #bf{%3.2f} (%3.2f %%)" % (latexParName, centralVal, statError, (statError/centralVal)*100, systError, (systError/centralVal)*100))
     print("%s -> %1.0f ± %1.0f (%3.2f%%) ± %1.0f (%3.2f%%)" % (varBin, centralVal, statError, (statError/centralVal)*100, systError, (systError/centralVal)*100))
 
-    num = re.findall(r'[\d\.\d]+', varBin)
-    fOut.write("%3.2f %3.2f %3.2f %3.2f %3.2f \n" % (float(num[0]), float(num[1]), centralVal, statError, systError))
+    #num = re.findall(r'[\d\.\d]+', varBin)
+    #fOut.write("%3.2f %3.2f %3.2f %3.2f %3.2f \n" % (float(num[0]), float(num[1]), centralVal, statError, systError))
+    fOut.write("%3.2f %3.2f %3.2f %3.2f %3.2f \n" % (0, 20, centralVal, statError, systError))
     canvasParVal.SaveAs("{}/systematics/{}_{}.pdf".format(path, varBin, parName))
 
 def CheckVariables(fInNames, parNames, xMin, xMax, fOutName, obs):
@@ -195,6 +204,19 @@ def CheckVariables(fInNames, parNames, xMin, xMax, fOutName, obs):
     #histGrid = TH2F("histGrid", "", 100, xMin[0], xMax[len(xMax)-1], 100, 0.7 * min(parValArray), 1.3 * max(parValArray))
     #histGrid.Draw("same")
     #graParVal.Draw("EPsame")
+
+def ToCArray(values, ctype="float", name="table", formatter=str, colcount=8):
+    # apply formatting to each element
+    values = [formatter(v) for v in values]
+
+    # split into rows with up to `colcount` elements per row
+    rows = [values[i:i+colcount] for i in range(0, len(values), colcount)]
+
+    # separate elements with commas, separate rows with newlines
+    body = ',\n    '.join([', '.join(r) for r in rows])
+
+    # assemble components into the complete string
+    return '{} {}[] = {{\n    {}}};'.format(ctype, name, body)
 
 
     

@@ -38,6 +38,13 @@ mframe_NA60_VWG = m_NA60_VWG.frame(Title="Tail compariso NA60")
 model_NA60_VWG.plotOn(mframe_NA60_VWG)
 
 
+mframe_CB2_NA60 = m_CB2_VWG.frame(Title="Tail comparison")
+model_CB2_VWG.plotOn(mframe_CB2_VWG)
+model_NA60_VWG.plotOn(mframe_CB2_VWG)
+model_CB2_VWG.plotOn(mframe_CB2_NA60, ROOT.RooFit.LineColor(ROOT.kRed+1))
+model_NA60_VWG.plotOn(mframe_CB2_NA60, ROOT.RooFit.LineColor(ROOT.kAzure+4))
+
+
 
 
 canvasCompTailsCB2 = ROOT.TCanvas("canvasCompTailsCB2", "canvasCompTailsCB2", 1200, 600)
@@ -55,3 +62,10 @@ canvasCompTailsNA60.SetLogy(1)
 mframe_NA60_VWG.GetYaxis().SetTitleOffset(1.4)
 mframe_NA60_VWG.Draw()
 canvasCompTailsNA60.SaveAs("NA60_tails_comparison.pdf")
+
+canvasCompTailsCB2NA60 = ROOT.TCanvas("canvasCompTailsCB2NA60", "canvasCompTailsCB2NA60", 800, 600)
+ROOT.gPad.SetLeftMargin(0.15)
+canvasCompTailsCB2NA60.SetLogy(1)
+mframe_CB2_NA60.GetYaxis().SetTitleOffset(1.4)
+mframe_CB2_NA60.Draw()
+canvasCompTailsCB2NA60.SaveAs("CB2_NA60_tails_comparison.pdf")

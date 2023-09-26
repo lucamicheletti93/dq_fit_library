@@ -30,10 +30,14 @@ def main():
     letexTitle.SetNDC()
     letexTitle.SetTextFont(42)
 
-    ptMin = "2"
-    ptMax = "3"
+    ptMin = "0"
+    ptMax = "1"
     path = "/Users/lucamicheletti/GITHUB/dq_fit_library/analysis/output/analysis/Run3_full_stat_apass4_data_run3_tails_matchedMchMid"
-    histName = "hist_mass_pt_all_histo_PairsMuonSEPM_matchedMchMid_pt_" + ptMin + "_" + ptMax
+
+    if ptMin == "0" and ptMax == "20":
+        histName = "hist_mass_all_histo_PairsMuonSEPM_matchedMchMid"
+    else:
+        histName = "hist_mass_pt_all_histo_PairsMuonSEPM_matchedMchMid_pt_" + ptMin + "_" + ptMax
     fInName = "CB2_CB2_VWG__2.1_4.9"
     
     fIn = ROOT.TFile("{}/{}__{}.root".format(path, histName, fInName), "READ")
@@ -44,8 +48,13 @@ def main():
     # Frame
     frame = listOfPrimitives.At(0)
     frame.GetXaxis().SetRangeUser(2.2, 4.5)
-    frame.GetYaxis().SetRangeUser(1e2, 5e5)
+    if ptMin == "0" and ptMax == "20":
+        frame.GetYaxis().SetRangeUser(5e2, 5e6)
+    else:
+        frame.GetYaxis().SetRangeUser(1e2, 5e5)
     frame.SetTitle(" ")
+    frame.GetXaxis().SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})")
+    frame.GetYaxis().SetTitle("Counts per 20 MeV/#it{c}^{2}")
 
     # Histograms
     histData = listOfPrimitives.At(1)
@@ -57,6 +66,8 @@ def main():
     pdfBkg = listOfPrimitives.At(7)
 
     canvasOut = TCanvas("canvasOut", "canvasOut", 800, 600)
+    canvasOut.SetTickx(1)
+    canvasOut.SetTicky(1)
     ROOT.gPad.SetLogy(1)
     frame.Draw()
     histData.Draw("EP SAME")
@@ -65,7 +76,7 @@ def main():
     pdfJpsi.Draw("SAME")
     pdfPsi2s.Draw("SAME")
 
-    legend = TLegend(0.68, 0.50, 0.85, 0.85, " ", "brNDC")
+    legend = TLegend(0.68, 0.47, 0.85, 0.82, " ", "brNDC")
     SetLegend(legend)
     legend.SetTextSize(0.045)
     legend.AddEntry(histData,"Data", "P")
@@ -75,14 +86,18 @@ def main():
     legend.AddEntry(pdfBkg,"Background", "L")
     legend.Draw()
 
-    letexTitle.DrawLatex(0.20, 0.88, "ALICE Preliminary, #sqrt{#it{s}} = 13.6 TeV")
-    letexTitle.DrawLatex(0.20, 0.81, "J/#psi, #psi(2S) #rightarrow #mu^{+}#mu^{-}, 2.5 < #it{y} < 4")
-    letexTitle.DrawLatex(0.20, 0.74, ptMin + " < #it{p}_{T} < " + ptMax + " GeV/#it{c}")
+    letexTitle.DrawLatex(0.20, 0.88, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV")
+    letexTitle.DrawLatex(0.20, 0.81, "Inclusive J/#psi, #psi(2S) #rightarrow #mu^{+}#mu^{-}, 2.5 < #it{y} < 4")
+
+    if ptMin == "0" and ptMax == "20":
+        letexTitle.DrawLatex(0.20, 0.74, "#it{p}_{T} < " + ptMax + " GeV/#it{c}")
+    else:
+        letexTitle.DrawLatex(0.20, 0.74, ptMin + " < #it{p}_{T} < " + ptMax + " GeV/#it{c}")
 
     canvasOut.Update()
 
     input()
-    canvasOut.SaveAs("invariantMass_pt_" + ptMin + "_" + ptMax + ".pdf")
+    canvasOut.SaveAs("figures/invariantMass_pt_" + ptMin + "_" + ptMax + ".pdf")
 
 if __name__ == '__main__':
     main()
