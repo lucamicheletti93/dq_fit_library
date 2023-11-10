@@ -125,6 +125,42 @@ def main():
     dfCsJpsiIcemPt['centralSum'] = dfCsJpsiIcemPt[centralCols].sum(axis=1)
     dfCsPsi2sIcemPt['centralSum'] = dfCsPsi2sIcemPt[centralCols].sum(axis=1)
 
+    # weights to be applied in the sum over Pt to get the y results
+    dfCsJpsiIcemPt['yWeights'] = [0.75, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.25]
+    dfCsPsi2sIcemPt['yWeights'] = [0.75, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.25]
+
+    for centralCol in centralCols:
+        dfCsJpsiIcemPt[f'{centralCol}_weights'] = dfCsJpsiIcemPt[centralCol] * dfCsJpsiIcemPt['yWeights']
+        dfCsPsi2sIcemPt[f'{centralCol}_weights'] = dfCsPsi2sIcemPt[centralCol] * dfCsPsi2sIcemPt['yWeights']
+
+    for doubleRenormCol in doubleRenormCols:
+        dfCsJpsiIcemPt[f'{doubleRenormCol}_weights'] = dfCsJpsiIcemPt[doubleRenormCol] * dfCsJpsiIcemPt['yWeights']
+        dfCsPsi2sIcemPt[f'{doubleRenormCol}_weights'] = dfCsPsi2sIcemPt[doubleRenormCol] * dfCsPsi2sIcemPt['yWeights']
+
+    for halfRenormCol in halfRenormCols:
+        dfCsJpsiIcemPt[f'{halfRenormCol}_weights'] = dfCsJpsiIcemPt[halfRenormCol] * dfCsJpsiIcemPt['yWeights']
+        dfCsPsi2sIcemPt[f'{halfRenormCol}_weights'] = dfCsPsi2sIcemPt[halfRenormCol] * dfCsPsi2sIcemPt['yWeights']
+
+    for highMassCol in highMassCols:
+        dfCsJpsiIcemPt[f'{highMassCol}_weights'] = dfCsJpsiIcemPt[highMassCol] * dfCsJpsiIcemPt['yWeights']
+        dfCsPsi2sIcemPt[f'{highMassCol}_weights'] = dfCsPsi2sIcemPt[highMassCol] * dfCsPsi2sIcemPt['yWeights']
+
+    for lowMassCol in lowMassCols:
+        dfCsJpsiIcemPt[f'{lowMassCol}_weights'] = dfCsJpsiIcemPt[lowMassCol] * dfCsJpsiIcemPt['yWeights']
+        dfCsPsi2sIcemPt[f'{lowMassCol}_weights'] = dfCsPsi2sIcemPt[lowMassCol] * dfCsPsi2sIcemPt['yWeights']
+
+    print("J/psi")
+    for centralCol, doubleRenormCol, halfRenormCol, highMassCol, lowMassCol in zip(centralCols, doubleRenormCols, halfRenormCols, highMassCols, lowMassCols):
+        print(dfCsJpsiIcemPt[f'{centralCol}_weights'].sum(), dfCsJpsiIcemPt[f'{doubleRenormCol}_weights'].sum(), dfCsJpsiIcemPt[f'{halfRenormCol}_weights'].sum(), dfCsJpsiIcemPt[f'{highMassCol}_weights'].sum(), dfCsJpsiIcemPt[f'{lowMassCol}_weights'].sum())
+
+    print("Psi2S")
+    for centralCol, doubleRenormCol, halfRenormCol, highMassCol, lowMassCol in zip(centralCols, doubleRenormCols, halfRenormCols, highMassCols, lowMassCols):
+        print(dfCsPsi2sIcemPt[f'{centralCol}_weights'].sum(), dfCsPsi2sIcemPt[f'{doubleRenormCol}_weights'].sum(), dfCsPsi2sIcemPt[f'{halfRenormCol}_weights'].sum(), dfCsPsi2sIcemPt[f'{highMassCol}_weights'].sum(), dfCsPsi2sIcemPt[f'{lowMassCol}_weights'].sum())
+    
+    #print(dfCsJpsiIcemPt)
+    #print(dfCsJpsiIcemPt['central1_weights'].sum())
+    exit()
+
     #dfMergedCsPsi2s = dfCsPsi2sIcemPt.groupby('ptGroup').agg({'centralSumPtWeight': 'sum'}).reset_index()
     #csCentralJpsiIcemPt = (dfMergedCsJpsi['centralSumPtWeight'].to_numpy()) * 1e-3
     #csCentralPsi2sIcemPt = (dfMergedCsPsi2s['centralSumPtWeight'].to_numpy()) * 1e-3
